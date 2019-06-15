@@ -2,28 +2,45 @@ package main
 
 import (
 	"container/list"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 const NORMAL_NEWS_CNT int = 5
 
-func main() {
+var JsonPath string = "./config.json"
 
-	var url string = "http://jwc.scuteo.com/jiaowuchu/cms/index.do"
+func main() {
 
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			fmt.Printf("> Panic: %s\n", err)
 		}
 	}()
 
+	var SCKEY string = getConfig(JsonPath).SCKEY
+	if SCKEY == "" {
+		panic("SCKEY is null")
+	}
+
+	var url string = "http://jwc.scuteo.com/jiaowuchu/cms/index.do"
+
 	var doc *goquery.Document = getHTML(url)
-
 	tops, normals := handleData(doc)
+	printAllData(tops, normals)
 
+	putNotifier(SCKEY, "Test", "Test")
+}
+
+func printAllData(tops *list.List, normals [NORMAL_NEWS_CNT](*list.List)) {
+
+	fmt.Printf("\n////// 顶部信息 //////\n\n")
 	for i := tops.Front(); i != nil; i = i.Next() {
 		fmt.Println(i.Value)
 	}
@@ -37,10 +54,31 @@ func main() {
 			fmt.Println(j.Value)
 		}
 	}
-
 }
 
-func getHTML(url string) *goquery.Document {
+type SckeyConfig struct {
+	SCKEY string
+}
+
+func getConfig(url string) *SckeyConfig {
+	cfg := &SckeyConfig{}
+	data, err := ioutil.ReadFile(url)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(data, cfg)
+	if err != nil {
+		panic(err)
+	}
+	return cfg
+}
+
+func putNotifier(Sckey string, title string, msg string) {
+
+	msg = fmt.Sprintf("%s (%s)", msg, time.Now().Format("2006-01-02 15:04:05"))
+
+	// url.QueryEscape 转化 url
+	url := fmt.Sprintf("https://sc.ftqq.com/%s.send?text=%s&desp=%s", Sckey, url.QueryEscape(title), url.QueryEscape(msg))
 
 	res, err := http.Get(url)
 	if err != nil {
@@ -50,50 +88,13 @@ func getHTML(url string) *goquery.Document {
 		panic(res.Status)
 	}
 
-	// html, err := ioutil.ReadAll(res.Body)
-	// fmt.Print(string(html))
+	defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
+
 	if err != nil {
 		panic(err)
 	}
 
-	return doc
-}
-
-func handleData(doc *goquery.Document) (*list.List, [NORMAL_NEWS_CNT](*list.List)) {
-
-	tops := list.New()
-
-	var normals [NORMAL_NEWS_CNT](*list.List)
-
-	var normal_idx int = 0
-
-	doc.Find(".index-content-infos > .index-content-infos-tab").Each(func(i int, s *goquery.Selection) {
-
-		var icit *goquery.Selection = s
-		icit.Find(".index-content-infos-tab-ad-info").Each(func(i int, s *goquery.Selection) {
-
-			top := &SCUT_TopNews{
-				title: s.Find("a").Text(),
-				href:  s.Find("a").AttrOr("href", "."),
-			}
-			tops.PushBack(top)
-		})
-
-		normals[normal_idx] = list.New()
-
-		icit.Find(".index-content-infos-tab-ad-news > li").Each(func(i int, s *goquery.Selection) {
-			normal := &SCUT_NormalNews{
-				title: s.Find("a").Text(),
-				date:  s.Find("span").Text(),
-				href:  s.Find("a").AttrOr("href", "."),
-			}
-			normals[normal_idx].PushBack(normal)
-		})
-
-		normal_idx = normal_idx + 1
-	})
-
-	return tops, normals
+	print(string(body))
 }
