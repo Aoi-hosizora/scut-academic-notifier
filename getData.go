@@ -7,8 +7,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func getHTML(url string) *goquery.Document {
-
+func getHTML(url string) pDoc {
+	// 获取 HTML
 	res, err := http.Get(url)
 	if err != nil {
 		panic(err)
@@ -28,21 +28,23 @@ func getHTML(url string) *goquery.Document {
 	return doc
 }
 
-func handleData(doc *goquery.Document) (*list.List, [NORMAL_NEWS_CNT](*list.List)) {
+func handleData(doc pDoc) (pList, ListArrNoTop) {
+	// 获取所有提醒数据
 
 	tops := list.New()
-	var normals [NORMAL_NEWS_CNT](*list.List)
+	var normals ListArrNoTop
+
 	var normal_idx int = 0
 
-	doc.Find(".index-content-infos > .index-content-infos-tab").Each(func(i int, s *goquery.Selection) {
+	doc.Find(".index-content-infos > .index-content-infos-tab").Each(func(i int, s pSel) {
 
-		var icit *goquery.Selection = s
+		var icit pSel = s
 
 		// 栏目顶部信息
-		icit.Find(".index-content-infos-tab-ad-info").Each(func(i int, s *goquery.Selection) {
+		icit.Find(".index-content-infos-tab-ad-info").Each(func(i int, s pSel) {
 
 			isnew := false
-			s.Find("div>img").Each(func(i int, s *goquery.Selection) {
+			s.Find("div>img").Each(func(i int, s pSel) {
 				isnew = true
 			})
 
@@ -56,9 +58,9 @@ func handleData(doc *goquery.Document) (*list.List, [NORMAL_NEWS_CNT](*list.List
 
 		// 栏目列表信息
 		normals[normal_idx] = list.New()
-		icit.Find(".index-content-infos-tab-ad-news > li").Each(func(i int, s *goquery.Selection) {
+		icit.Find(".index-content-infos-tab-ad-news > li").Each(func(i int, s pSel) {
 			isnew := false
-			s.Find("div>img").Each(func(i int, s *goquery.Selection) {
+			s.Find("div>img").Each(func(i int, s pSel) {
 				isnew = true
 			})
 			normal := &SCUT_NormalNews{
@@ -73,4 +75,32 @@ func handleData(doc *goquery.Document) (*list.List, [NORMAL_NEWS_CNT](*list.List
 	})
 
 	return tops, normals
+}
+
+// "顶部信息", "教务通知", "交换交流", "新闻动态", "学院信息", "媒体关注"
+func getNewNews(tops pList, normals ListArrNoTop) ListArrAndTop {
+	// 获取标记为 New 的数据
+	var retList ListArrAndTop
+
+	newlist := list.New()
+	for i := tops.Front(); i != nil; i = i.Next() {
+		news := i.Value.(*SCUT_TopNews)
+		if news.isnew {
+			newlist.PushBack(news)
+		}
+	}
+	retList[0] = newlist
+
+	for i := 0; i < NORMAL_NEWS_CNT; i++ {
+		newlist = list.New()
+		for j := normals[i].Front(); j != nil; j = j.Next() {
+			news := j.Value.(*SCUT_NormalNews)
+			if news.isnew {
+				newlist.PushBack(news)
+			}
+		}
+		retList[i+1] = newlist
+	}
+
+	return retList
 }
