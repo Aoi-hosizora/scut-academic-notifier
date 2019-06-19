@@ -28,3 +28,4 @@ go run *.go
 
 ### Screenshot
 ![Screenshot](./Screenshot.png)
+![Screenshot 2](./Screenshot_2.png)
