@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/Aoi-hosizora/Academic_Notifier/models"
-	"gopkg.in/fatih/set.v0"
 )
 
 // Server Chan Url: `Sckey` `title` `msg`
@@ -24,7 +23,7 @@ var JWViewUrl string = "http://jw.scut.edu.cn/zhinan/cms/article/view.do?type=po
 func SendNotifier(Sckey string, title string, msg string) {
 
 	// 将发送内容加上时间
-	msg = fmt.Sprintf("> At %s Send: \n %s", GetNowTimeString(), msg)
+	msg = fmt.Sprintf("> At %s Send: \n\n%s", GetNowTimeString(), msg)
 
 	// url.QueryEscape 转化 url
 	url := fmt.Sprintf(ServerChanUrl, Sckey, url.QueryEscape(title), url.QueryEscape(msg))
@@ -101,15 +100,25 @@ func ParseJson(Json string) []models.NoticeItem {
 	return l
 }
 
-// [] -> list
-func ToSetOfNew(ns []models.NoticeItem) set.Interface {
-	s := set.New(set.ThreadSafe)
-	for i := 0; i < len(ns); i++ {
-		if ns[i].IsNew {
-			s.Add(ns[i])
+// [is / isnot new] - [old]
+func ToArrayDifference(new []models.NoticeItem, old []models.NoticeItem) []*models.NoticeItem {
+	diff := make([]*models.NoticeItem, len(new))
+	num := 0
+	for i := 0; i < len(new); i++ {
+		if new[i].IsNew {
+			has := false
+			for _, v := range old {
+				if v.Title == new[i].Title {
+					has = true
+				}
+			}
+			if !has {
+				diff[num] = &new[i]
+				num += 1
+			}
 		}
 	}
-	return s
+	return diff
 }
 
 // Api tag -> Type str

@@ -8,7 +8,6 @@ import (
 
 	"github.com/Aoi-hosizora/Academic_Notifier/models"
 	"github.com/Aoi-hosizora/Academic_Notifier/utils"
-	"gopkg.in/fatih/set.v0"
 )
 
 // 访问教务通知频率
@@ -44,24 +43,26 @@ func main() {
 
 // 获取教务通知，判断更新
 func grabNotice(url string, SCKEY string) {
-	newSet := set.New(set.ThreadSafe)
-
+	newSet := make([]models.NoticeItem, SendMaxCnt)
 	for {
-		notices := utils.ToSetOfNew(utils.ParseJson(utils.GetPostData(url, 0, 65)))
-		diffs := set.Difference(notices, newSet)
-		size := diffs.Size()
-		for i := 0; i < int(math.Ceil(float64(size)/float64(SendMaxCnt))); i++ {
+		notices := utils.ParseJson(utils.GetPostData(url, 0, 50))
+		diffs := utils.ToArrayDifference(notices, newSet)
+		for i := 0; i < int(math.Ceil(float64(len(diffs))/float64(SendMaxCnt))); i++ {
 			msg := ""
 			for j := i * SendMaxCnt; j < i*SendMaxCnt+SendMaxCnt; j++ {
-				if j >= size {
+				if j < len(diffs) {
+					ni := diffs[j]
+					if ni == nil {
+						break
+					}
+					fmt.Println(ni.String())
+					msg = msg + fmt.Sprintln(ni.String())
+				} else {
 					break
 				}
-				ni := diffs.Pop().(models.NoticeItem)
-				fmt.Println(ni.String())
-				msg = msg + fmt.Sprintln(ni.String())
 			}
 			if msg != "" {
-				utils.SendNotifier(SCKEY, "教务系统通知", msg)
+				utils.SendNotifier(SCKEY, fmt.Sprintf("教务系统通知 %d", i+1), msg)
 				fmt.Println(msg)
 			}
 		}

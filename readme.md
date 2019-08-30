@@ -1,14 +1,11 @@
-# Academic_Notifier
-+ RT the news in SCUT Academic Notice
+# SCUT_Academic_Notifier
++ RT the notices in SCUT Academic Notice
++ [SCUT office of Academic Affairs](http://jw.scut.edu.cn/zhinan/cms/index.do)
 
 ### Environment
 + go 1.11.5 windows/amd64
-
-+ Requirement: 
-	+ [goquery](https://github.com/PuerkitoBio/goquery)
-	+ [set.v0](https://gopkg.in/fatih/set.v0)
-
-+ Notifier: [Server酱](http://sc.ftqq.com/3.version)
++ Notifier: [ServerChan](http://sc.ftqq.com/3.version)
++ Requirement: None
 
 ### Setup
 ```json
@@ -22,9 +19,21 @@
 ```bash
 # Setup config.json
 
-# All package main
-go run *.go
+go run app.go
 ```
+
+### Tips
++ One RT will only contain 10 notices.
+```go
+// 一次发送的最大量
+var SendMaxCnt int = 10
+for i := 0; i < int(math.Ceil(float64(len(diffs))/float64(SendMaxCnt))); i++ {
+    // ...
+}
+```
+> text：消息标题，最长为256，必填。
+> 
+> desp：消息内容，最长64Kb，可空，支持MarkDown。
 
 ### Screenshot
 ![Screenshot](./assets/Screenshot.png)
