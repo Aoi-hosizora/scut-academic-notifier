@@ -27,5 +27,5 @@ go run *.go
 ```
 
 ### Screenshot
-![Screenshot](./Screenshot.png)
-![Screenshot 2](./Screenshot_2.png)
+![Screenshot](./assets/Screenshot.png)
+![Screenshot 2](./assets/Screenshot_2.png)
