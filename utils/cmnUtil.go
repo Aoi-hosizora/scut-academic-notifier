@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"io/ioutil"
-	"strings"
 	"time"
 )
 
@@ -28,12 +27,4 @@ func GetConfig(url string) *Config {
 // 当前时间格式化
 func GetNowTimeString() string {
 	return time.Now().Format("2006-01-02 15:04:05")
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-// Private:
-
-// MarkDown 增加项目符号
-func toMarkdown(msg string) string {
-	return "+ " + strings.Replace(msg, "\n", "\n+ ", -1)
 }

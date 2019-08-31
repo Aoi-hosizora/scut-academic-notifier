@@ -17,7 +17,8 @@ import (
 var ServerChanUrl string = "https://sc.ftqq.com/%s.send?text=%s&desp=%s"
 
 // 教务通知项目页 `id`
-var JWViewUrl string = "http://jw.scut.edu.cn/zhinan/cms/article/view.do?type=posts&id=%s"
+// var JWViewUrl string = "http://jw.scut.edu.cn/zhinan/cms/article/view.do?type=posts&id=%s"
+var JWViewUrl string = "http://jw.scut.edu.cn/dist/#/detail/index?id=%s&type=notice"
 
 // 通过 Server 酱发送信息
 func SendNotifier(Sckey string, title string, msg string) {
@@ -101,8 +102,8 @@ func ParseJson(Json string) []models.NoticeItem {
 }
 
 // [is / isnot new] - [old]
-func ToArrayDifference(new []models.NoticeItem, old []models.NoticeItem) []*models.NoticeItem {
-	diff := make([]*models.NoticeItem, len(new))
+func ToArrayDifference(new []models.NoticeItem, old []models.NoticeItem) []models.NoticeItem {
+	diff := make([]models.NoticeItem, len(new))
 	num := 0
 	for i := 0; i < len(new); i++ {
 		if new[i].IsNew {
@@ -113,12 +114,17 @@ func ToArrayDifference(new []models.NoticeItem, old []models.NoticeItem) []*mode
 				}
 			}
 			if !has {
-				diff[num] = &new[i]
+				diff[num] = new[i]
 				num += 1
 			}
 		}
 	}
-	return diff
+
+	ret := make([]models.NoticeItem, num)
+	for i := 0; i < len(ret); i++ {
+		ret[i] = diff[i]
+	}
+	return ret
 }
 
 // Api tag -> Type str

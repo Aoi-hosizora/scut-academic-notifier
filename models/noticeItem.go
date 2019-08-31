@@ -13,5 +13,5 @@ type NoticeItem struct {
 }
 
 func (i *NoticeItem) String() string {
-	return fmt.Sprintf("+ %s: [%s](\"%s\") - %s", i.Type, i.Title, i.Url, i.Date)
+	return fmt.Sprintf("%s：[%s](%s) - %s", i.Type, i.Title, i.Url, i.Date)
 }
