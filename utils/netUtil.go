@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Aoi-hosizora/Academic_Notifier/models"
+	"github.com/PuerkitoBio/goquery"
 )
 
 // Server Chan Url: `Sckey` `title` `msg`
@@ -20,7 +21,10 @@ var ServerChanUrl string = "https://sc.ftqq.com/%s.send?text=%s&desp=%s"
 // var JWViewUrl string = "http://jw.scut.edu.cn/zhinan/cms/article/view.do?type=posts&id=%s"
 var JWViewUrl string = "http://jw.scut.edu.cn/dist/#/detail/index?id=%s&type=notice"
 
-// 通过 Server 酱发送信息
+// 软件学院新闻资讯页 `sse`
+var SeViewUrl string = "http://www2.scut.edu.cn/%s"
+
+// 通过 Server 酱发送信息 (POST)
 func SendNotifier(Sckey string, title string, msg string) {
 
 	// 将发送内容加上时间
@@ -28,7 +32,7 @@ func SendNotifier(Sckey string, title string, msg string) {
 
 	// url.QueryEscape 转化 url
 	url := fmt.Sprintf(ServerChanUrl, Sckey, url.QueryEscape(title), url.QueryEscape(msg))
-	res, err := http.Get(url)
+	res, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader("name=cjb"))
 
 	if err != nil {
 		panic(err)
@@ -45,6 +49,9 @@ func SendNotifier(Sckey string, title string, msg string) {
 	}
 	log.Println(string(body))
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 教务通知
 
 // Post 获得 Json
 func GetPostData(postUrl string, tag int, pageSize int) string {
@@ -99,6 +106,72 @@ func ParseJson(Json string) []models.NoticeItem {
 		l[i] = notice
 	}
 	return l
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 学院通知
+
+type pSel = *goquery.Selection
+type pDoc = *goquery.Document
+
+func GetSENotices(SESchoolUrl string, PartUrls []string, PartNames []string) []models.NoticeItem {
+	var rets = []models.NoticeItem{}
+	for k, v := range PartUrls {
+		ls := _GetSEPartNotices(fmt.Sprintf(SESchoolUrl, v), "软院 - "+PartNames[k])
+		if ls == nil {
+			return nil
+		}
+		for _, l := range ls {
+			rets = append(rets, l)
+		}
+	}
+	return rets
+}
+
+// 解析 html 返回通知
+func _GetSEPartNotices(SESchoolUrl string, PartName string) []models.NoticeItem {
+	client := &http.Client{}
+	resp, err := client.Get(SESchoolUrl)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil
+	}
+
+	return _ParseSENotices(doc, PartName)
+}
+
+// 解析 html 内容
+func _ParseSENotices(doc pDoc, PartName string) []models.NoticeItem {
+	lis := doc.Find("ul.news_ul > li.news_li")
+	l := make([]models.NoticeItem, lis.Size())
+	lis.Each(func(i int, s pSel) {
+		a := s.Find(".news_title a")
+		meta := s.Find(".news_title span.news_meta")
+		notice := models.NoticeItem{
+			Title: a.Text(),
+			Url:   fmt.Sprintf(SeViewUrl, a.AttrOr("href", "")),
+			Type:  PartName,
+			Date:  meta.Text(),
+			IsNew: true,
+		}
+		l[i] = notice
+	})
+	return l
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 其他处理
+
+// a1 + a2
+func ToArrayAdd(a1 []models.NoticeItem, a2 []models.NoticeItem) []models.NoticeItem {
+	for _, k := range a2 {
+		a1 = append(a1, k)
+	}
+	return a1
 }
 
 // [is / isnot new] - [old]
