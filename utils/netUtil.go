@@ -31,8 +31,8 @@ func SendNotifier(Sckey string, title string, msg string) {
 	msg = fmt.Sprintf("> At %s Send: \n\n%s", GetNowTimeString(), msg)
 
 	// url.QueryEscape 转化 url
-	url := fmt.Sprintf(ServerChanUrl, Sckey, url.QueryEscape(title), url.QueryEscape(msg))
-	res, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader("name=cjb"))
+	sendUrl := fmt.Sprintf(ServerChanUrl, Sckey, url.QueryEscape(title), url.QueryEscape(msg))
+	res, err := http.Post(sendUrl, "application/x-www-form-urlencoded", strings.NewReader("name=cjb"))
 
 	if err != nil {
 		panic(err)
@@ -96,11 +96,12 @@ func ParseJson(Json string) []models.NoticeItem {
 	l := make([]models.NoticeItem, len(s.List))
 	for i := 0; i < len(s.List); i++ {
 		nt := s.List[i]
+
 		notice := models.NoticeItem{
 			Title: nt.Title,
 			Url:   fmt.Sprintf(JWViewUrl, nt.Id),
 			Type:  GetTypeFromTag(nt.Tag),
-			Date:  nt.CreateTime,
+			Date:  ParseSpTimeString(nt.CreateTime), // 2019-10-01
 			IsNew: nt.IsNew,
 		}
 		l[i] = notice
@@ -150,12 +151,13 @@ func _ParseSENotices(doc pDoc, PartName string) []models.NoticeItem {
 	l := make([]models.NoticeItem, lis.Size())
 	lis.Each(func(i int, s pSel) {
 		a := s.Find(".news_title a")
-		meta := s.Find(".news_title span.news_meta")
+		meta := s.Find("span.news_meta")
+
 		notice := models.NoticeItem{
 			Title: a.Text(),
 			Url:   fmt.Sprintf(SeViewUrl, a.AttrOr("href", "")),
 			Type:  PartName,
-			Date:  meta.Text(),
+			Date:  meta.Text(), // 2019-10-01
 			IsNew: true,
 		}
 		l[i] = notice

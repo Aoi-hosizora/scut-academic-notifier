@@ -11,7 +11,7 @@
 ```json
 // config.json
 {
-	"SCKEY": "xxxxxx"
+    "SCKEY": "xxxxxx"
 }
 ```
 
@@ -23,17 +23,25 @@ go run app.go
 ```
 
 ### Tips
-+ One RT will only contain 10 notices.
++ Will only send notices up to 15 days ago
+
 ```go
-// 一次发送的最大量
-var SendMaxCnt int = 10
-for i := 0; i < int(math.Ceil(float64(len(diffs))/float64(SendMaxCnt))); i++ {
-    // ...
+// 半个月
+var SendTimeRange time.Duration = 15 * 24 * time.Hour
+nt, err := time.ParseInLocation("2006-01-02 15:04:05", v.Date+" 00:00:00", time.Local)
+
+if err == nil {
+    if nt.Before(time.Now().Add(-SendTimeRange)) {
+        continue
+    }
 }
 ```
+
 > text：消息标题，最长为256，必填。
 > 
 > desp：消息内容，最长64Kb，可空，支持MarkDown。
+>
+> Refer from http://sc.ftqq.com/3.version
 
 ### Screenshot
 ![Screenshot](./assets/Screenshot.png)

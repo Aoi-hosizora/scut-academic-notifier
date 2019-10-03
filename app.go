@@ -16,6 +16,9 @@ var TimeInternal time.Duration = 10 * time.Minute
 // 一次发送的最大量
 var SendMaxCnt int = 50
 
+// 发送最久半个月前的信息
+var SendTimeRange time.Duration = 15 * 24 * time.Hour
+
 // 教务通知链接
 var JWUrl string = "http://jw.scut.edu.cn/zhinan/cms/index.do"
 
@@ -62,7 +65,8 @@ func grabNotice(url string, SCKEY string) {
 
 	for {
 		// 通知
-		newSet := utils.ParseJson(utils.GetPostData(url, 0, 50))
+		// newSet := utils.ParseJson(utils.GetPostData(url, 0, 50))
+		newSet := []models.NoticeItem{}
 		newSeSet := utils.GetSENotices(SEUrl, SEUrlParts, SEUrlPartNames)
 		if newSeSet != nil {
 			oldSeSet = newSeSet
@@ -75,6 +79,16 @@ func grabNotice(url string, SCKEY string) {
 		// 信息
 		msg := ""
 		for _, v := range diffs {
+
+			// 一个月内的
+			nt, err := time.ParseInLocation("2006-01-02 15:04:05",
+				v.Date+" 00:00:00", time.Local)
+
+			if err == nil {
+				if nt.Before(time.Now().Add(-SendTimeRange)) {
+					continue
+				}
+			}
 			msg = msg + fmt.Sprintf("+ %s\n", v.String())
 		}
 
@@ -82,7 +96,7 @@ func grabNotice(url string, SCKEY string) {
 		if msg != "" {
 			msg += moreStr
 			utils.SendNotifier(SCKEY, "教务系统通知", msg)
-			fmt.Println(msg)
+			fmt.Println("已发送：\n" + msg)
 		}
 
 		oldSet = newSet
