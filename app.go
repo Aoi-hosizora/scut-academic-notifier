@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-
+	"math"
 	"time"
 
 	"github.com/Aoi-hosizora/Academic_Notifier/models"
@@ -14,10 +14,13 @@ import (
 var TimeInternal time.Duration = 10 * time.Minute
 
 // 一次发送的最大量
-var SendMaxCnt int = 50
+var SendMaxCnt int = 10
+
+// 连续错误最大次数
+var ErrorMaxCnt int = 5
 
 // 发送最久半个月前的信息
-var SendTimeRange time.Duration = 15 * 24 * time.Hour
+var SendTimeRange time.Duration = 30 * 24 * time.Hour
 
 // 教务通知链接
 var JWUrl string = "http://jw.scut.edu.cn/zhinan/cms/index.do"
@@ -48,59 +51,86 @@ func main() {
 }
 
 var oldSet = make([]models.NoticeItem, SendMaxCnt)
-var oldSeSet = make([]models.NoticeItem, SendMaxCnt)
+var oldSeSet = make([]models.NoticeItem, 50)
+
+// 记录连续错误次数
+var errCnt = 0
 
 // 获取教务通知，判断更新
 func grabNotice(url string, SCKEY string) {
 
-	moreStr := fmt.Sprintf("--- \n+ 更多通知请访问[华工教务通知](%s)", JWUrl)
+	moreStr := fmt.Sprintf("--- \n+ 更多通知请访问[华工教务通知](%s)和[软院公务通知](%s)", JWUrl, fmt.Sprintf(SEUrl, SEUrlParts[0]))
 
 	defer func() {
 		if err := recover(); err != nil {
-			var msg string = fmt.Sprintf("> Panic: %s\n\n+ 忽略 Panic 继续监听中...\n"+moreStr, err)
+			errCnt += 1
+			msg := ""
+			if errCnt < ErrorMaxCnt {
+				msg = fmt.Sprintf("+ 忽略 Panic (第 %d 次) 继续监听中...\n\n+ Panic: %s\n"+moreStr, errCnt, err)
+			} else {
+				msg = fmt.Sprintf("+ Panic 已经超过 %d 次，程序终止\n\n+ Panic: %s\n"+moreStr, errCnt, err)
+			}
+			if len(msg) >= 203 {
+				msg = msg[0:200] + "..."
+			}
 			utils.SendNotifier(SCKEY, "教务系统通知 错误信息", msg)
 			log.Println(err)
+			log.Printf("errCnt: %d", errCnt)
+			if errCnt >= ErrorMaxCnt {
+				panic("")
+			}
 		}
 	}()
 
 	for {
 		// 通知
-		// newSet := utils.ParseJson(utils.GetPostData(url, 0, 50))
-		newSet := []models.NoticeItem{}
+		newSet := utils.ParseJson(utils.GetPostData(url, 0, 50))
+		// newSet := []models.NoticeItem{}
 		newSeSet := utils.GetSENotices(SEUrl, SEUrlParts, SEUrlPartNames)
 		if newSeSet != nil {
 			oldSeSet = newSeSet
 		}
-		newSet = utils.ToArrayAdd(newSet, oldSeSet)
 
-		// 差集
+		// 并集差集
+		newSet = utils.ToArrayAdd(newSet, oldSeSet)
 		diffs := utils.ToArrayDifference(newSet, oldSet)
 
-		// 信息
-		msg := ""
+		// 一个月内的
+		sendLists := make([]models.NoticeItem, 0)
 		for _, v := range diffs {
-
-			// 一个月内的
-			nt, err := time.ParseInLocation("2006-01-02 15:04:05",
-				v.Date+" 00:00:00", time.Local)
-
-			if err == nil {
-				if nt.Before(time.Now().Add(-SendTimeRange)) {
-					continue
-				}
+			nt, err := time.ParseInLocation("2006-01-02 15:04:05", v.Date+" 00:00:00", time.Local)
+			if err == nil && nt.After(time.Now().Add(-SendTimeRange)) {
+				sendLists = append(sendLists, v)
 			}
-			msg = msg + fmt.Sprintf("+ %s\n", v.String())
 		}
 
-		// 发送
-		if msg != "" {
-			msg += moreStr
-			utils.SendNotifier(SCKEY, "教务系统通知", msg)
-			fmt.Println("已发送：\n" + msg)
+		// 向上取整
+		ceil := int(math.Ceil(float64(len(sendLists)) / float64(SendMaxCnt)))
+		for i := 0; i < ceil; i++ {
+			// 切分合并记录
+			msg := ""
+			for j := i * SendMaxCnt; j < i*SendMaxCnt+SendMaxCnt; j++ {
+				if j < len(sendLists) {
+					ni := sendLists[j]
+					msg += fmt.Sprintf("+ %s\n", ni.String())
+				} else {
+					break
+				}
+			}
+			// 发送
+			if msg != "" {
+				// 最后一条
+				if i == ceil-1 {
+					msg += moreStr
+				}
+				utils.SendNotifier(SCKEY, fmt.Sprintf("教务系统通知（第 %d 条，共 %d 条）", i+1, ceil), msg)
+				fmt.Println("已发送：\n" + msg)
+			}
 		}
 
 		oldSet = newSet
 		fmt.Println(utils.GetNowTimeString())
+		errCnt = 0
 		time.Sleep(TimeInternal)
 	}
 }
