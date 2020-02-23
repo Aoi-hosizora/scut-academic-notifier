@@ -1,5 +1,7 @@
 server:
   polling-duration: 120 # second
+  send-max-count: 10
+  send-range: 60 # day
 
-wx:
+wechat:
   sckey: xxx

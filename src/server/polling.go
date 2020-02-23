@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/model"
 	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/service"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/util"
 	"github.com/Aoi-hosizora/ahlib/xcondition"
 	"github.com/Aoi-hosizora/ahlib/xslice"
 	"log"
@@ -47,9 +46,19 @@ func (s *Server) polling() {
 		}
 
 		// filter
+		inTimeRange := func(srcTime string) bool {
+			t, err := time.ParseInLocation("2006-01-02", srcTime, time.Local)
+			if err != nil {
+				log.Println("Failed to parse time:", err)
+				return true
+			}
+			du := time.Duration(s.Config.ServerConfig.SendRange) * time.Hour * 24 // day
+			return t.After(time.Now().Add(-du))
+		}
+
 		sendList := make([]model.Dto, 0)
 		for _, item := range allDiffList {
-			if util.IsTimeInRange(item.Date, s.Static.SendRange) {
+			if inTimeRange(item.Date) {
 				sendList = append(sendList, item)
 			}
 		}
@@ -63,7 +72,7 @@ func (s *Server) polling() {
 }
 
 func (s *Server) sendDtoSlice(dtos []model.Dto, tail string) {
-	maxCnt := s.Static.SendMaxCount
+	maxCnt := s.Config.ServerConfig.SendMaxCount
 	sendTimes := int(math.Ceil(float64(len(dtos)) / float64(maxCnt)))
 	for i := 0; i < sendTimes; i++ {
 		// split
@@ -87,7 +96,7 @@ func (s *Server) sendDtoSlice(dtos []model.Dto, tail string) {
 			title := fmt.Sprintf("教务系统通知 (第 %d 条，共 %d 条)", i+1, sendTimes)
 			ok := s.send(title, msg)
 			log.Printf("Sent %d(%d ~ %d in %d) notice(s) %s",
-				to-from, from, to, len(dtos),
+				to-from, from+1, to, len(dtos),
 				xcondition.IfThenElse(ok, "success", "failed").(string),
 			)
 		}

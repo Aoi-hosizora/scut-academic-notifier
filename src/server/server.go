@@ -24,7 +24,7 @@ func NewServer(config *config.Config, static *config.Static) *Server {
 func (s *Server) send(title string, message string) bool {
 	title = url.QueryEscape(title)
 	message = url.QueryEscape(message)
-	sendUrl := fmt.Sprintf(s.Static.ServerChanUrl, s.Config.WxConfig.Sckey, title, message)
+	sendUrl := fmt.Sprintf(s.Static.ServerChanUrl, s.Config.WeChatConfig.Sckey, title, message)
 
 	resp, err := http.Post(sendUrl, "application/x-www-form-urlencoded", strings.NewReader("name=cjb"))
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *Server) send(title string, message string) bool {
 }
 
 func (s *Server) Serve() {
-	if s.Config.WxConfig.Sckey == "" {
+	if s.Config.WeChatConfig.Sckey == "" {
 		log.Fatalln("Sckey could not be empty")
 	}
 	log.Printf("Start listening, pollng every %d second(s)...\n", s.Config.ServerConfig.PollingDuration)

@@ -5,14 +5,19 @@ import (
 	"io/ioutil"
 )
 
-type Config struct {
-	ServerConfig struct {
-		PollingDuration int `yaml:"polling-duration"`
-	} `yaml:"server"`
+type ServerConfig struct {
+	PollingDuration int `yaml:"polling-duration"` // second
+	SendMaxCount    int `yaml:"send-max-count"`
+	SendRange       int `yaml:"send-range"` // day
+}
 
-	WxConfig struct {
-		Sckey string `yaml:"sckey"`
-	} `yaml:"wx"`
+type WeChatConfig struct {
+	Sckey string `yaml:"sckey"`
+}
+
+type Config struct {
+	ServerConfig *ServerConfig `yaml:"server"`
+	WeChatConfig *WeChatConfig `yaml:"wechat"`
 }
 
 func LoadConfig(path string) (*Config, error) {

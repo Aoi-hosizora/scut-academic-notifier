@@ -2,14 +2,10 @@ package config
 
 import (
 	"fmt"
-	"time"
 )
 
 type Static struct {
 	ServerChanUrl string
-
-	SendMaxCount int
-	SendRange    time.Duration
 
 	JwHomepage string   // jw homepage (mobile)
 	JwReferer  string   // request referer
@@ -27,9 +23,6 @@ type Static struct {
 func LoadStatic() *Static {
 	static := &Static{
 		ServerChanUrl: "https://sc.ftqq.com/%s.send?text=%s&desp=%s", // `Sckey` `title` `msg`
-
-		SendMaxCount: 10,
-		SendRange:    60 * 24 * time.Hour, // 2 months
 
 		JwHomepage: "http://jw.scut.edu.cn/zhinan/cms/index.do",
 		JwReferer:  "http://jw.scut.edu.cn/zhinan/cms/toPosts.do",
