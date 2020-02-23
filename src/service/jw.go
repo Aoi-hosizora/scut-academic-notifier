@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/config"
 	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/model"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/util"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,6 +17,7 @@ func FetchJwNotice(static *config.Static) ([]model.Dto, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Fetch jw notice success")
 
 	ret := make([]model.Dto, len(vo.List))
 	for i, vo := range vo.List {
@@ -24,7 +25,7 @@ func FetchJwNotice(static *config.Static) ([]model.Dto, error) {
 			Title: vo.Title,
 			Url:   fmt.Sprintf(static.JwItemUrl, vo.Id),
 			Type:  static.JwTagNames[vo.Tag-1],
-			Date:  util.ParseSpTimeString(vo.CreateTime),
+			Date:  strings.ReplaceAll(vo.CreateTime, ".", "-"), // 2020.01.01
 			IsNew: vo.IsNew,
 		}
 	}

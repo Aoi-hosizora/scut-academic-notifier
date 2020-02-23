@@ -2,29 +2,34 @@ package config
 
 import (
 	"fmt"
+	"time"
 )
 
 type Static struct {
-	SendMaxCount  int
 	ServerChanUrl string
 
-	JwHomepage string
-	JwReferer  string
-	JwApiUrl   string
-	JwTagNames []string
-	JwItemUrl  string
+	SendMaxCount int
+	SendRange    time.Duration
 
-	SeHomepage    string
-	SeWebUrl      string
-	SeWebUrlParts []string
-	SeTagNames    []string
-	SeItemUrl     string
+	JwHomepage string   // jw homepage (mobile)
+	JwReferer  string   // request referer
+	JwApiUrl   string   // request api url
+	JwTagNames []string // response tag names
+	JwItemUrl  string   // response item url (mobile)
+
+	SeHomepage    string   // se homepage
+	SeWebUrl      string   // request web url
+	SeWebUrlParts []string // request web url parts
+	SeTagNames    []string // response tag names
+	SeItemUrl     string   // response item url
 }
 
 func LoadStatic() *Static {
 	static := &Static{
-		SendMaxCount:  10,
 		ServerChanUrl: "https://sc.ftqq.com/%s.send?text=%s&desp=%s", // `Sckey` `title` `msg`
+
+		SendMaxCount: 10,
+		SendRange:    60 * 24 * time.Hour, // 2 months
 
 		JwHomepage: "http://jw.scut.edu.cn/zhinan/cms/index.do",
 		JwReferer:  "http://jw.scut.edu.cn/zhinan/cms/toPosts.do",

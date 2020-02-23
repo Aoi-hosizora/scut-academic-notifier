@@ -14,7 +14,7 @@ var (
 
 func init() {
 	flag.BoolVar(&help, "h", false, "show help")
-	flag.StringVar(&configPath, "config", "./src/config/Config.yaml", "config path")
+	flag.StringVar(&configPath, "config", "./src/config/config.yaml", "config path")
 }
 
 func main() {

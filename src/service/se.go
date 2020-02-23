@@ -6,6 +6,7 @@ import (
 	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/model"
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -19,6 +20,7 @@ func FetchSeNotice(static *config.Static) ([]model.Dto, error) {
 		}
 		vos[k] = vo
 	}
+	log.Println("Fetch se notice success")
 
 	ret := make([]model.Dto, 0)
 	for _, vo := range vos {
@@ -66,7 +68,7 @@ func parseSe(static *config.Static, vo *model.SeVo) ([]model.Dto, error) {
 		ret[i] = model.Dto{
 			Title: a.Text(),
 			Url:   fmt.Sprintf(static.SeItemUrl, a.AttrOr("href", "")),
-			Type:  static.SeTagNames[vo.TagIdx],
+			Type:  "软院 - " + static.SeTagNames[vo.TagIdx],
 			Date:  meta.Text(), // 2019-10-01
 			IsNew: true,
 		}

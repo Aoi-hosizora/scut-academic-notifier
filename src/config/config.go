@@ -7,11 +7,12 @@ import (
 
 type Config struct {
 	ServerConfig struct {
-		PollingDuration int32 `json:"polling-duration"`
-	} `json:"server"`
+		PollingDuration int `yaml:"polling-duration"`
+	} `yaml:"server"`
+
 	WxConfig struct {
-		Sckey string `json:"sckey"`
-	} `json:"wx"`
+		Sckey string `yaml:"sckey"`
+	} `yaml:"wx"`
 }
 
 func LoadConfig(path string) (*Config, error) {
