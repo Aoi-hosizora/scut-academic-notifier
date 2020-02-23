@@ -1,1 +1,6 @@
-/config.json
+.idea/
+.vscode/
+.ionide/
+.history/
+
+src/config/config.yaml
