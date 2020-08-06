@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/config"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/model"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"log"

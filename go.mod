@@ -1,9 +1,9 @@
-module github.com/Aoi-hosizora/SCUT_Academic_Notifier
+module github.com/Aoi-hosizora/scut-academic-notifier
 
-go 1.13
+go 1.14
 
 require (
-	github.com/Aoi-hosizora/ahlib v0.0.0-20200204070028-56cdd0c3662f
+	github.com/Aoi-hosizora/ahlib v1.2.7
 	github.com/PuerkitoBio/goquery v1.5.1
 	gopkg.in/yaml.v2 v2.2.8
 )

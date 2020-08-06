@@ -1,4 +1,4 @@
-# SCUT_Academic_Notifier
+# scut-academic-notifier
 
 + RT the notices in SCUT Academic Notice (华工教务通知) and SE College Focus (软院公务通知)
 + [SCUT Office of Academic Affairs](http://jw.scut.edu.cn/zhinan/cms/index.do)
@@ -21,10 +21,10 @@ go run main.go
 
 + Wechat
 
-![Screenshots](./assets/Screenshot.png)
+![Screenshots](../SCUT_Academic_Notifier/assets/Screenshot.png)
 
-![Screenshots 2](./assets/Screenshot_2.png)
+![Screenshots 2](../SCUT_Academic_Notifier/assets/Screenshot_2.png)
 
 + Server
 
-![Screenshots_3](./assets/Screenshot_3.png)
+![Screenshots_3](../SCUT_Academic_Notifier/assets/Screenshot_3.png)

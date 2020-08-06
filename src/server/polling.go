@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/model"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/service"
 	"github.com/Aoi-hosizora/ahlib/xcondition"
 	"github.com/Aoi-hosizora/ahlib/xslice"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/service"
 	"log"
 	"math"
 	"time"
@@ -32,8 +32,8 @@ func (s *Server) polling() {
 			continue
 		}
 
-		jwDiff := xslice.Its(xslice.SliceDiff(xslice.Sti(newJwSet), xslice.Sti(oldJwSet)), model.Dto{}).([]model.Dto)
-		seDiff := xslice.Its(xslice.SliceDiff(xslice.Sti(newSeSet), xslice.Sti(oldSeSet)), model.Dto{}).([]model.Dto)
+		jwDiff := xslice.Its(xslice.Diff(xslice.Sti(newJwSet), xslice.Sti(oldJwSet)), model.Dto{}).([]model.Dto)
+		seDiff := xslice.Its(xslice.Diff(xslice.Sti(newSeSet), xslice.Sti(oldSeSet)), model.Dto{}).([]model.Dto)
 
 		allDiffList := make([]model.Dto, 0)
 		allDiffList = append(allDiffList, jwDiff...)

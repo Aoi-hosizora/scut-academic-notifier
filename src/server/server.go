@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/config"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
 	"log"
 	"net/http"
 	"net/url"

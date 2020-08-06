@@ -2,24 +2,19 @@ package main
 
 import (
 	"flag"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/config"
-	"github.com/Aoi-hosizora/SCUT_Academic_Notifier/src/server"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/server"
 	"log"
 )
 
 var (
-	help bool
-	configPath string
+	hHelp   = flag.Bool("h", false, "show help")
+	fConfig = flag.String("config", "./config.yaml", "config path")
 )
-
-func init() {
-	flag.BoolVar(&help, "h", false, "show help")
-	flag.StringVar(&configPath, "config", "./src/config/config.yaml", "config path")
-}
 
 func main() {
 	flag.Parse()
-	if help {
+	if *hHelp {
 		flag.Usage()
 	} else {
 		run()
@@ -27,7 +22,7 @@ func main() {
 }
 
 func run() {
-	cfg, err := config.LoadConfig(configPath)
+	cfg, err := config.LoadConfig(*fConfig)
 	if err != nil {
 		log.Fatalln("Failed to load config file:", err)
 	}
