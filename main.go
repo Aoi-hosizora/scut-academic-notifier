@@ -6,6 +6,7 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/logger"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/wechat"
 	"log"
@@ -34,6 +35,10 @@ func run() {
 	if err != nil {
 		log.Fatalln("Failed to setup logger:", err)
 	}
+	err = database.SetupGorm()
+	if err != nil {
+		log.Fatalln("Failed to connect mysql:", err)
+	}
 	fmt.Println()
 	err = bot.Setup()
 	if err != nil {
@@ -41,7 +46,7 @@ func run() {
 	}
 	err = wechat.Setup()
 	if err != nil {
-		log.Fatalln("Failed to load wechat server-chan:", err)
+		log.Fatalln("Failed to load serverchan:", err)
 	}
 
 	defer server.Bot.Stop()

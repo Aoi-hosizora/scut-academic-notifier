@@ -39,6 +39,14 @@ func initHandler(b *server.BotServer) {
 	b.HandleMessage("/help", controller.HelpCtrl)
 	b.HandleMessage("/cancel", controller.CancelCtrl)
 	b.HandleMessage(telebot.OnText, controller.OnTextCtrl)
+
+	// wechat
+	b.InlineButtons["btn_unbind"] = &telebot.InlineButton{Unique: "btn_unbind", Text: "Unbind"}
+	b.InlineButtons["btn_cancel"] = &telebot.InlineButton{Unique: "btn_cancel", Text: "Cancel"}
+	b.HandleMessage("/bind", controller.BindCtrl)
+	b.HandleMessage("/unbind", controller.UnbindCtrl)
+	b.HandleInline(b.InlineButtons["btn_unbind"], controller.InlUnbindBtnCtrl)
+	b.HandleInline(b.InlineButtons["btn_cancel"], controller.InlCancelBtnCtrl)
 }
 
 func SendToChat(chatId int64, what interface{}, options ...interface{}) error {

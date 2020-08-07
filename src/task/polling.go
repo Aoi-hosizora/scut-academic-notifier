@@ -1,4 +1,4 @@
-package server
+package task
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ var (
 	oldSeSet = make([]model.Dto, 0)
 )
 
-func (s *Server) polling() {
+func polling() {
 	duration := time.Duration(s.Config.ServerConfig.PollingDuration) * time.Second
 	moreStr := fmt.Sprintf(
 		"--- \n+ For more, please visit [华工教务通知](%s) and [软院公务通知](%s)",
@@ -71,7 +71,7 @@ func (s *Server) polling() {
 	}
 }
 
-func (s *Server) sendDtoSlice(dtos []model.Dto, tail string) {
+func sendDtoSlice(dtos []model.Dto, tail string) {
 	maxCnt := s.Config.ServerConfig.SendMaxCount
 	sendTimes := int(math.Ceil(float64(len(dtos)) / float64(maxCnt)))
 	for i := 0; i < sendTimes; i++ {

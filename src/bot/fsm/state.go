@@ -6,4 +6,5 @@ import (
 
 const (
 	None xtelebot.UserStatus = iota
+	Binding
 )
