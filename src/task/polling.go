@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	oldJwSet = make([]model.Dto, 0)
-	oldSeSet = make([]model.Dto, 0)
+	oldJwSet = make([]model.Item, 0)
+	oldSeSet = make([]model.Item, 0)
 )
 
 func polling() {
@@ -24,18 +24,18 @@ func polling() {
 	)
 
 	for {
-		newJwSet, err1 := service.FetchJwNotice(s.Static)
-		newSeSet, err2 := service.FetchSeNotice(s.Static)
+		newJwSet, err1 := service.GetJwItems(s.Static)
+		newSeSet, err2 := service.GetSeItems(s.Static)
 		if err1 != nil || err2 != nil {
 			log.Printf("Failed to fetch notice, jw: %v, se: %v", err1, err2)
 			time.Sleep(duration)
 			continue
 		}
 
-		jwDiff := xslice.Its(xslice.Diff(xslice.Sti(newJwSet), xslice.Sti(oldJwSet)), model.Dto{}).([]model.Dto)
-		seDiff := xslice.Its(xslice.Diff(xslice.Sti(newSeSet), xslice.Sti(oldSeSet)), model.Dto{}).([]model.Dto)
+		jwDiff := xslice.Its(xslice.Diff(xslice.Sti(newJwSet), xslice.Sti(oldJwSet)), model.Item{}).([]model.Item)
+		seDiff := xslice.Its(xslice.Diff(xslice.Sti(newSeSet), xslice.Sti(oldSeSet)), model.Item{}).([]model.Item)
 
-		allDiffList := make([]model.Dto, 0)
+		allDiffList := make([]model.Item, 0)
 		allDiffList = append(allDiffList, jwDiff...)
 		allDiffList = append(allDiffList, seDiff...)
 
@@ -56,7 +56,7 @@ func polling() {
 			return t.After(time.Now().Add(-du))
 		}
 
-		sendList := make([]model.Dto, 0)
+		sendList := make([]model.Item, 0)
 		for _, item := range allDiffList {
 			if inTimeRange(item.Date) {
 				sendList = append(sendList, item)
@@ -71,7 +71,7 @@ func polling() {
 	}
 }
 
-func sendDtoSlice(dtos []model.Dto, tail string) {
+func sendDtoSlice(dtos []model.Item, tail string) {
 	maxCnt := s.Config.ServerConfig.SendMaxCount
 	sendTimes := int(math.Ceil(float64(len(dtos)) / float64(maxCnt)))
 	for i := 0; i < sendTimes; i++ {
