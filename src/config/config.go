@@ -5,30 +5,49 @@ import (
 	"io/ioutil"
 )
 
-type ServerConfig struct {
-	PollingDuration int `yaml:"polling-duration"` // second
-	SendMaxCount    int `yaml:"send-max-count"`
-	SendRange       int `yaml:"send-range"` // day
+var Configs *Config
+
+type MetaConfig struct {
+	RunMode string `yaml:"run-mode"`
+	LogPath string `yaml:"log-path"`
+	LogName string `yaml:"log-name"`
 }
 
-type WeChatConfig struct {
-	Sckey string `yaml:"sckey"`
+type BotConfig struct {
+	Token         string `yaml:"token"`
+	PollerTimeout uint64 `yaml:"poller-timeout"`
+}
+
+type MysqlConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Name     string `json:"name"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	LogMode  bool   `json:"log-mode"`
+}
+
+type TaskConfig struct {
+	Cron string `yaml:"cron"`
 }
 
 type Config struct {
-	ServerConfig *ServerConfig `yaml:"server"`
-	WeChatConfig *WeChatConfig `yaml:"wechat"`
+	Meta  *MetaConfig  `yaml:"meta"`
+	Bot   *BotConfig   `yaml:"bot"`
+	Mysql *MysqlConfig `yaml:"mysql"`
+	Task  *TaskConfig  `yaml:"task"`
 }
 
-func LoadConfig(path string) (*Config, error) {
-	f, err := ioutil.ReadFile(path)
+func Load(configPath string) error {
+	f, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	config := &Config{}
-	err = yaml.Unmarshal(f, config)
+
+	Configs = &Config{}
+	err = yaml.Unmarshal(f, Configs)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return config, nil
+	return nil
 }

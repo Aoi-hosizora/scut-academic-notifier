@@ -1,7 +1,18 @@
-server:
-  polling-duration: 120 # second
-  send-max-count: 10
-  send-range: 60 # day
+meta:
+  run-mode: debug
+  log-path: ./logs/
+  log-name: console
 
-wechat:
-  sckey: xxx
+bot:
+  token: xxx
+  poller-timeout: 3600 # second
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  name: db_scut_notifier
+  user: root
+  password: 123
+
+task:
+  cron: 0 */1 * * * *

@@ -2,8 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
-	"github.com/Aoi-hosizora/scut-academic-notifier/src/server"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/logger"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/wechat"
 	"log"
 )
 
@@ -22,12 +26,24 @@ func main() {
 }
 
 func run() {
-	cfg, err := config.LoadConfig(*fConfig)
+	err := config.Load(*fConfig)
 	if err != nil {
-		log.Fatalln("Failed to load config file:", err)
+		log.Fatalln("Failed to load config:", err)
 	}
-	static := config.LoadStatic()
+	err = logger.Setup()
+	if err != nil {
+		log.Fatalln("Failed to setup logger:", err)
+	}
+	fmt.Println()
+	err = bot.Setup()
+	if err != nil {
+		log.Fatalln("Failed to load telebot:", err)
+	}
+	err = wechat.Setup()
+	if err != nil {
+		log.Fatalln("Failed to load wechat server-chan:", err)
+	}
 
-	s := server.NewServer(cfg, static)
-	s.Serve()
+	defer server.Bot.Stop()
+	server.Bot.Start()
 }
