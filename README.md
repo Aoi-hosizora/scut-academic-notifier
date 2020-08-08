@@ -1,6 +1,6 @@
 # scut-academic-notifier
 
-+ RT the notices in SCUT Academic Notice (华工教务通知) and SE College Focus (软院公务通知)
++ ReSend the notices in SCUT Academic Notice (华工教务通知) and SE College Focus (软院公务通知)
 + [SCUT Office of Academic Affairs](http://jw.scut.edu.cn/zhinan/cms/index.do)
 + [SCUT Software Engineering College Focus](http://www2.scut.edu.cn/sse/xyjd_17232/list.htm)
 

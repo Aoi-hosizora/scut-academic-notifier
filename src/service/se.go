@@ -51,7 +51,7 @@ func parseSeItem(vo *model.SePage) ([]*model.Item, error) {
 		ret[i] = &model.Item{
 			Title: a.Text(),
 			Url:   fmt.Sprintf(static.SeItemUrl, a.AttrOr("href", "")),
-			Type:  "软院 - " + vo.TagName,
+			Type:  "软院" + vo.TagName,
 			Date:  meta.Text(), // 2019-10-01
 		}
 	})

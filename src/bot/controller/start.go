@@ -13,7 +13,18 @@ const (
 	HELP  = `*Commands*
 /start - show start message
 /help - show this help message
-/cancel - cancel the last action`
+/cancel - cancel the last action
+
+*Account*
+/bind - bind with sckey
+/unbind - unbind this chat
+
+*Notifier*
+/send - send the current notices
+
+*Bug report*
+https://github.com/Aoi-hosizora/scut-academic-notifier/issues/new
+`
 
 	NO_ACTION       = "There is no action now."
 	ACTION_CANCELED = "Action has been canceled."
@@ -28,6 +39,9 @@ const (
 	UNBIND_Q       = "You have already bound with %s. Sure to unbind?"
 	UNBIND_SUCCESS = "Unbind success, you will not receive any notifiers now."
 	UNBIND_FAILED  = "Failed to unbind, please retry later."
+
+	GET_DATA_FAILED = "Failed to get notice information, please retry later."
+	NO_NEW_DATA     = "There is no new notice."
 )
 
 // /start

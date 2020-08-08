@@ -24,7 +24,7 @@ func Setup() error {
 	}
 
 	fmt.Println()
-	log.Println("[Telebot] Success to connect telegram bot:", b.Me.Username)
+	log.Printf("[Telebot] Success to connect telegram bot: @%s\n", b.Me.Username)
 	fmt.Println()
 
 	server.Bot = server.NewBotServer(b)
@@ -47,6 +47,9 @@ func initHandler(b *server.BotServer) {
 	b.HandleMessage("/unbind", controller.UnbindCtrl)
 	b.HandleInline(b.InlineButtons["btn_unbind"], controller.InlUnbindBtnCtrl)
 	b.HandleInline(b.InlineButtons["btn_cancel"], controller.InlCancelBtnCtrl)
+
+	// notifier
+	b.HandleMessage("/send", controller.SendCtrl)
 }
 
 func SendToChat(chatId int64, what interface{}, options ...interface{}) error {

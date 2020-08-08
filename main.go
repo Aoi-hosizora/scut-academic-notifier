@@ -8,6 +8,7 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/logger"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/task"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/wechat"
 	"log"
 )
@@ -39,6 +40,10 @@ func run() {
 	if err != nil {
 		log.Fatalln("Failed to connect mysql:", err)
 	}
+	err = database.SetupRedis()
+	if err != nil {
+		log.Fatalln("Failed to connect redis:", err)
+	}
 	fmt.Println()
 	err = bot.Setup()
 	if err != nil {
@@ -48,6 +53,13 @@ func run() {
 	if err != nil {
 		log.Fatalln("Failed to load serverchan:", err)
 	}
+	err = task.Setup()
+	if err != nil {
+		log.Fatalln("Failed to load cron:", err)
+	}
+
+	defer task.Cron.Stop()
+	task.Cron.Start()
 
 	defer server.Bot.Stop()
 	server.Bot.Start()

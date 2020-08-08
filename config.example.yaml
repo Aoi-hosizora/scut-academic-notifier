@@ -18,5 +18,14 @@ mysql:
   user: root
   password: 123
 
+redis:
+  host: 127.0.0.1
+  port: 6379
+  db: 1
+  password: 123
+  connect-timeout: 1000 # microsecond
+  read-timeout: 1000
+  write-timeout: 1000
+
 task:
-  cron: 0 */5 * * * *
+  cron: 0 0/1 * * * *

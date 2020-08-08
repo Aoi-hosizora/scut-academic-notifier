@@ -49,11 +49,6 @@ func task() {
 	wg.Wait()
 }
 
-var (
-	oldJwData = make(map[int64][]*model.Item)
-	oldSeData = make(map[int64][]*model.Item)
-)
-
 func doForUser(user *model.User) {
 	// get new data
 	newJwItems, err := service.GetJwItems()
@@ -65,54 +60,45 @@ func doForUser(user *model.User) {
 		return
 	}
 
-	// get old data
-	oldJwItems, ok := oldJwData[user.ChatID]
-	if !ok || oldJwItems == nil {
-		oldJwItems = make([]*model.Item, 0)
-		oldJwData[user.ChatID] = oldJwItems
+	// filter new data
+	newItems := make([]*model.Item, 0)
+	for _, jw := range newJwItems {
+		if service.CheckTime(jw.Date, config.Configs.Send.Range) {
+			newItems = append(newItems, jw)
+		}
 	}
-	oldSeItems, ok := oldSeData[user.ChatID]
-	if !ok || oldSeItems == nil {
-		oldSeItems = make([]*model.Item, 0)
-		oldSeData[user.ChatID] = oldSeItems
+	for _, se := range newSeItems {
+		if service.CheckTime(se.Date, config.Configs.Send.Range) {
+			newItems = append(newItems, se)
+		}
 	}
 
-	// calc diff
-	sendJwItems := xslice.Its(xslice.Diff(xslice.Sti(newJwItems), xslice.Sti(oldJwItems)), &model.Item{}).([]*model.Item)
-	sendSeItems := xslice.Its(xslice.Diff(xslice.Sti(newSeItems), xslice.Sti(oldSeItems)), &model.Item{}).([]*model.Item)
-	if len(sendJwItems) == 0 || len(sendSeItems) == 0 {
+	// get old data and calc diff
+	oldItems, ok := database.GetOldData(user.ChatID)
+	if !ok {
 		return
 	}
-
-	// filter valid
-	sendItems := make([]*model.Item, 0)
-	for _, jw := range sendJwItems {
-		if service.CheckTime(jw.Date, config.Configs.Send.Range) {
-			sendItems = append(sendItems, jw)
-		}
-	}
-	for _, se := range sendSeItems {
-		if service.CheckTime(se.Date, config.Configs.Send.Range) {
-			sendItems = append(sendItems, se)
-		}
-	}
+	sendItems := xslice.Its(xslice.DiffWith(xslice.Sti(newItems), xslice.Sti(oldItems), func(i, j interface{}) bool {
+		i1 := i.(*model.Item)
+		i2 := j.(*model.Item)
+		return i1.Type == i2.Type && i1.Title == i2.Title
+	}), &model.Item{}).([]*model.Item)
 	if len(sendItems) == 0 {
 		return
 	}
 
 	// send items
-	moreStr := fmt.Sprintf(
-		"--- \n+ 更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。",
-		static.JwHomepage, static.SeHomepage,
-	)
+	moreStr := fmt.Sprintf("更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。", static.JwHomepage, static.SeHomepage)
 
 	// send bot
 	sb := strings.Builder{}
-	sb.WriteString("*教务系统通知*\n=====\n")
-	for _, item := range sendItems {
-		sb.WriteString(fmt.Sprintf("+ %s\n", item.String()))
+	sb.WriteString("*学校相关通知*\n=====\n")
+	for idx, item := range sendItems {
+		sb.WriteString(fmt.Sprintf("%d. %s\n", idx+1, item.String()))
 	}
+	sb.WriteString("=====\n")
 	sb.WriteString(moreStr)
+
 	msg := sb.String()
 	err = bot.SendToChat(user.ChatID, msg, telebot.ModeMarkdown)
 	if err != nil {
@@ -131,18 +117,18 @@ func doForUser(user *model.User) {
 
 		sb := strings.Builder{}
 		for j := from; j < to; j++ {
-			sb.WriteString(fmt.Sprintf("+ %s\n", sendItems[j].String()))
+			sb.WriteString(fmt.Sprintf("%d. %s\n", j+1, sendItems[j].String()))
 		}
 		if i == sendTimes-1 {
+			sb.WriteString("\n--- \n")
 			sb.WriteString(moreStr)
 		}
-		msg := sb.String()
 
-		title := fmt.Sprintf("教务系统通知 (第 %d 条，共 %d 条)", i+1, sendTimes)
+		msg := sb.String()
+		title := fmt.Sprintf("学校相关通知 (第 %d 条，共 %d 条)", i+1, sendTimes)
 		_ = wechat.SendToChat(user.Sckey, title, msg)
 	}
 
 	// write old data
-	oldJwData[user.ChatID] = newJwItems
-	oldSeData[user.ChatID] = newSeItems
+	database.SetOldData(user.ChatID, newItems)
 }

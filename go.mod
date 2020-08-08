@@ -8,6 +8,7 @@ require (
 	github.com/Aoi-hosizora/go-serverchan v1.0.0
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/gomodule/redigo/redis v0.0.0-20200429221454-e14091dffc1b
 	github.com/jinzhu/gorm v1.9.15
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.6.0
