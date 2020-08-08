@@ -18,6 +18,11 @@ type BotConfig struct {
 	PollerTimeout uint64 `yaml:"poller-timeout"`
 }
 
+type SendConfig struct {
+	Range    int32 `yaml:"range"`
+	MaxCount int32 `yaml:"max-count"`
+}
+
 type MysqlConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
@@ -34,6 +39,7 @@ type TaskConfig struct {
 type Config struct {
 	Meta  *MetaConfig  `yaml:"meta"`
 	Bot   *BotConfig   `yaml:"bot"`
+	Send  *SendConfig  `yaml:"send"`
 	Mysql *MysqlConfig `yaml:"mysql"`
 	Task  *TaskConfig  `yaml:"task"`
 }

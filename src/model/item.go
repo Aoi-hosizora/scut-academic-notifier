@@ -2,6 +2,7 @@ package model
 
 import "fmt"
 
+// A render result item of jw and se.
 type Item struct {
 	Title string
 	Url   string

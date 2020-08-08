@@ -7,6 +7,10 @@ bot:
   token: xxx
   poller-timeout: 3600 # second
 
+send:
+  range: 30 # day
+  max-count: 10 # wechat
+
 mysql:
   host: 127.0.0.1
   port: 3306
@@ -15,4 +19,4 @@ mysql:
   password: 123
 
 task:
-  cron: 0 */1 * * * *
+  cron: 0 */5 * * * *
