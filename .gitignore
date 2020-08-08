@@ -6,6 +6,8 @@
 
 ### Project ###
 build/
-logs/
+logs/*.*
+logs/*
+!.gitkeep
 config.yaml
 database_test.go

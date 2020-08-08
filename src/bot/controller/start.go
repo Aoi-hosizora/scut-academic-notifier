@@ -10,7 +10,7 @@ import (
 // noinspection GoSnakeCaseUsage
 const (
 	START = "Here is aoihosizora's scut academic notifier bot. See /help for help."
-	HELP  = `*Commands*
+	HELP  = `*Common*
 /start - show start message
 /help - show this help message
 /cancel - cancel the last action
