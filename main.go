@@ -2,25 +2,24 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/serverchan"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/logger"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/task"
-	"github.com/Aoi-hosizora/scut-academic-notifier/src/wechat"
 	"log"
 )
 
 var (
-	hHelp   = flag.Bool("h", false, "show help")
-	fConfig = flag.String("config", "./config.yaml", "config path")
+	fHelp   = flag.Bool("h", false, "show help")
+	fConfig = flag.String("config", "./config.yaml", "change the config path")
 )
 
 func main() {
 	flag.Parse()
-	if *hHelp {
+	if *fHelp {
 		flag.Usage()
 	} else {
 		run()
@@ -44,12 +43,12 @@ func run() {
 	if err != nil {
 		log.Fatalln("Failed to connect redis:", err)
 	}
-	fmt.Println()
+
 	err = bot.Setup()
 	if err != nil {
 		log.Fatalln("Failed to load telebot:", err)
 	}
-	err = wechat.Setup()
+	err = serverchan.Setup()
 	if err != nil {
 		log.Fatalln("Failed to load serverchan:", err)
 	}

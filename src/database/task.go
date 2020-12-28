@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/ahlib-web/xredis"
+	"github.com/Aoi-hosizora/ahlib-db/xredis"
 	"github.com/Aoi-hosizora/ahlib/xnumber"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
 	"github.com/gomodule/redigo/redis"
@@ -11,13 +11,13 @@ import (
 
 const MagicToken = "$$"
 
-func getOldDataPattern(chatId, tag, title string) string {
+func concatPattern(chatId, tag, title string) string {
 	tag = strings.ReplaceAll(tag, "-", MagicToken)
 	title = strings.ReplaceAll(title, "-", MagicToken)
 	return fmt.Sprintf("ah-scut-%s-%s-%s", chatId, tag, title)
 }
 
-func parseOldDataPattern(key string) (chatId int64, tag, title string) {
+func parsePattern(key string) (chatId int64, tag, title string) {
 	sp := strings.Split(key, "-")
 	chatId, _ = xnumber.ParseInt64(sp[2], 10)
 	tag = strings.ReplaceAll(sp[3], MagicToken, "-")
@@ -25,29 +25,37 @@ func parseOldDataPattern(key string) (chatId int64, tag, title string) {
 	return
 }
 
-func GetOldData(chatId int64) ([]*model.Item, bool) {
-	pattern := getOldDataPattern(xnumber.FormatInt64(chatId, 10), "*", "*")
-	redisMu.Lock()
-	keys, err := redis.Strings(Conn.Do("KEYS", pattern))
-	redisMu.Unlock()
+func GetOldItems(chatId int64) ([]*model.PostItem, bool) {
+	conn, err := Redis.Dial()
+	if err != nil {
+		return nil, false
+	}
+	defer conn.Close()
+
+	pattern := concatPattern(xnumber.I64toa(chatId), "*", "*")
+	keys, err := redis.Strings(conn.Do("KEYS", pattern))
 	if err != nil {
 		return nil, false
 	}
 
-	items := make([]*model.Item, len(keys))
+	items := make([]*model.PostItem, len(keys))
 	for idx := range items {
-		_, tag, title := parseOldDataPattern(keys[idx])
-		items[idx] = &model.Item{Type: tag, Title: title}
+		_, tag, title := parsePattern(keys[idx])
+		items[idx] = &model.PostItem{Type: tag, Title: title}
 	}
 	return items, true
 
 }
 
-func SetOldData(chatId int64, items []*model.Item) bool {
-	pattern := getOldDataPattern(xnumber.FormatInt64(chatId, 10), "*", "*")
-	redisMu.Lock()
-	tot, del, err := xredis.WithConn(Conn).DeleteAll(pattern)
-	redisMu.Unlock()
+func SetOldItems(chatId int64, items []*model.PostItem) bool {
+	conn, err := Redis.Dial()
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	pattern := concatPattern(xnumber.I64toa(chatId), "*", "*")
+	tot, del, err := xredis.WithConn(conn).DeleteAll(pattern)
 	if err != nil || (tot != 0 && del == 0) {
 		return false
 	}
@@ -55,14 +63,12 @@ func SetOldData(chatId int64, items []*model.Item) bool {
 	keys := make([]string, 0)
 	values := make([]string, 0)
 	for _, item := range items {
-		id := xnumber.FormatInt64(chatId, 10)
-		pattern := getOldDataPattern(id, item.Type, item.Title)
+		id := xnumber.I64toa(chatId)
+		pattern := concatPattern(id, item.Type, item.Title)
 		keys = append(keys, pattern)
 		values = append(values, id)
 	}
 
-	redisMu.Lock()
-	tot, add, err := xredis.WithConn(Conn).SetAll(keys, values)
-	redisMu.Unlock()
+	tot, add, err := xredis.WithConn(conn).SetAll(keys, values)
 	return err == nil && (tot == 0 || add >= 1)
 }

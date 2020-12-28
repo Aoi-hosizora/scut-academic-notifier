@@ -2,12 +2,13 @@ package database
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/ahlib-web/xgorm"
+	"github.com/Aoi-hosizora/ahlib-db/xgorm"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/logger"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 var DB *gorm.DB
@@ -22,11 +23,15 @@ func SetupGorm() error {
 
 	db.LogMode(config.Configs.Meta.RunMode == "debug")
 	db.SingularTable(true)
-	db.SetLogger(xgorm.NewGormLogrus(logger.Logger))
+	db.SetLogger(xgorm.NewLogrusLogger(logger.Logger))
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, name string) string {
 		return "tbl_" + name
 	}
-	xgorm.HookDeleteAtField(db, xgorm.DefaultDeleteAtTimeStamp)
+	xgorm.HookDeleteAtField(db, "1970-01-01 00:00:00") // <<<
+
+	db.DB().SetMaxIdleConns(int(cfg.MaxIdle))
+	db.DB().SetMaxOpenConns(int(cfg.MaxActive))
+	db.DB().SetConnMaxLifetime(time.Duration(cfg.MaxLifetime) * time.Second)
 
 	err = migrate(db)
 	if err != nil {

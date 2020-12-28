@@ -4,10 +4,11 @@
 .ionide/
 .history/
 
-### Project ###
+### Build ###
 build/
-logs/*.*
-logs/*
-!.gitkeep
 config.yaml
+logs/*
+logs/*.*
+**/logs/
+!logs/.gitkeep
 database_test.go

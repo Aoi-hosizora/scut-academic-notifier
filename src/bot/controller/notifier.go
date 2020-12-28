@@ -31,7 +31,7 @@ func SendCtrl(m *telebot.Message) {
 		return
 	}
 
-	items := make([]*model.Item, 0)
+	items := make([]*model.PostItem, 0)
 	for _, jw := range jwItems {
 		if service.CheckTime(jw.Date, config.Configs.Send.Range) {
 			items = append(items, jw)
