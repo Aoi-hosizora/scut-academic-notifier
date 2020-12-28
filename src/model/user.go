@@ -10,6 +10,6 @@ type User struct {
 	ChatID    int64      `gorm:"not_null;unique_index:uk_chat_delete_at"`
 	Sckey     string     `gorm:"type:varchar(255)"`
 
-	DeletedAt *time.Time `gorm:"default:'1970-01-01 00:00:00';unique_index:uk_chat_delete_at"`
+	DeletedAt *time.Time `gorm:"default:'1970-01-01 00:00:00'; unique_index:uk_chat_delete_at"`
 	xgorm.GormTimeWithoutDeleteAt
 }

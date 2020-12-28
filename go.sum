@@ -6,6 +6,7 @@ github.com/Aoi-hosizora/ahlib v1.4.4 h1:V7oE9he+stSvfBI+9mjf6rUY1HrFvXzMAg7wSw96
 github.com/Aoi-hosizora/ahlib v1.4.4/go.mod h1:69tHdnDy1yjwzNKV4jD0ltnGxTWgFra+sqbadYc0Dmk=
 github.com/Aoi-hosizora/ahlib-db v1.4.4 h1:RtSxYOTZvSmMj2DPSwXgJ2E8sxu0tpSMK/awLPkNyRc=
 github.com/Aoi-hosizora/ahlib-db v1.4.4/go.mod h1:i3PoZkdm7uiweZ2eS4RPdRL4xXLrIyKd7cafBFOzLcI=
+github.com/Aoi-hosizora/ahlib-more v1.4.3 h1:gXR6unSUC/nPzNHMICPj2bY1CD4c+Mn+KuYw1DSCWJA=
 github.com/Aoi-hosizora/ahlib-more v1.4.3/go.mod h1:FF9+fsvAoJcP9DZVZNCA/F+pamC0OgRknLLF2z6O/Ss=
 github.com/Aoi-hosizora/ahlib-web v1.2.10 h1:U4OXcqd3oRVaqAUPs6UJ/TWZnOROvzJG09KEuWfvvpY=
 github.com/Aoi-hosizora/ahlib-web v1.2.10/go.mod h1:QmajH4OLJTgIx0lCUOzJ7SPE8mvF5aIeTaPFR8+85XE=
@@ -17,8 +18,11 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/PuerkitoBio/goquery v1.5.1 h1:PSPBGne8NIUWw+/7vFBV+kG2J/5MOjbzc7154OaKCSE=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
+github.com/ah-forklib/lumberjack v0.0.0-20201027021347-0dae85f5680a h1:FDaz8TCfD9LBzKZxdw0BLsUfSO/L2AzVAYymh2UjxR8=
 github.com/ah-forklib/lumberjack v0.0.0-20201027021347-0dae85f5680a/go.mod h1:DCC4i4s/q5FI7IFZWRZNf1xzQ+SmexT8+QdUODdPG8Y=
+github.com/ah-forklib/rotatelogs v0.0.0-20201027030445-0980b2e1e9b3 h1:BaDweijpJuj5mfeKNggl1NI0ej53DLJbK8xq+Bf41ps=
 github.com/ah-forklib/rotatelogs v0.0.0-20201027030445-0980b2e1e9b3/go.mod h1:U9XOQVrks/SqPaOzjGTU14Axa9zgqH0Kgsuz7+M56Kc=
+github.com/ah-forklib/strftime v0.0.0-20201027030051-f6e1a7ff7457 h1:OPVaeZXzBQO4RLYcUitVHzhFCP9EIX+bulkPIkRclFQ=
 github.com/ah-forklib/strftime v0.0.0-20201027030051-f6e1a7ff7457/go.mod h1:OhiwFvwV+NqKibxZBh1/mJEXNVq1BLXuygRr0HzJcRY=
 github.com/andybalholm/brotli v1.0.0/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/andybalholm/cascadia v1.1.0 h1:BuuO6sSfQNFRu1LppgbD25Hr2vLYW25JvxHs5zzsLTo=

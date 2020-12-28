@@ -11,13 +11,13 @@ import (
 
 const MagicToken = "$$"
 
-func getOldDataPattern(chatId, tag, title string) string {
+func concatPattern(chatId, tag, title string) string {
 	tag = strings.ReplaceAll(tag, "-", MagicToken)
 	title = strings.ReplaceAll(title, "-", MagicToken)
 	return fmt.Sprintf("ah-scut-%s-%s-%s", chatId, tag, title)
 }
 
-func parseOldDataPattern(key string) (chatId int64, tag, title string) {
+func parsePattern(key string) (chatId int64, tag, title string) {
 	sp := strings.Split(key, "-")
 	chatId, _ = xnumber.ParseInt64(sp[2], 10)
 	tag = strings.ReplaceAll(sp[3], MagicToken, "-")
@@ -25,14 +25,14 @@ func parseOldDataPattern(key string) (chatId int64, tag, title string) {
 	return
 }
 
-func GetOldData(chatId int64) ([]*model.PostItem, bool) {
+func GetOldItems(chatId int64) ([]*model.PostItem, bool) {
 	conn, err := Redis.Dial()
 	if err != nil {
 		return nil, false
 	}
 	defer conn.Close()
 
-	pattern := getOldDataPattern(xnumber.I64toa(chatId), "*", "*")
+	pattern := concatPattern(xnumber.I64toa(chatId), "*", "*")
 	keys, err := redis.Strings(conn.Do("KEYS", pattern))
 	if err != nil {
 		return nil, false
@@ -40,21 +40,21 @@ func GetOldData(chatId int64) ([]*model.PostItem, bool) {
 
 	items := make([]*model.PostItem, len(keys))
 	for idx := range items {
-		_, tag, title := parseOldDataPattern(keys[idx])
+		_, tag, title := parsePattern(keys[idx])
 		items[idx] = &model.PostItem{Type: tag, Title: title}
 	}
 	return items, true
 
 }
 
-func SetOldData(chatId int64, items []*model.PostItem) bool {
+func SetOldItems(chatId int64, items []*model.PostItem) bool {
 	conn, err := Redis.Dial()
 	if err != nil {
 		return false
 	}
 	defer conn.Close()
 
-	pattern := getOldDataPattern(xnumber.I64toa(chatId), "*", "*")
+	pattern := concatPattern(xnumber.I64toa(chatId), "*", "*")
 	tot, del, err := xredis.WithConn(conn).DeleteAll(pattern)
 	if err != nil || (tot != 0 && del == 0) {
 		return false
@@ -64,7 +64,7 @@ func SetOldData(chatId int64, items []*model.PostItem) bool {
 	values := make([]string, 0)
 	for _, item := range items {
 		id := xnumber.I64toa(chatId)
-		pattern := getOldDataPattern(id, item.Type, item.Title)
+		pattern := concatPattern(id, item.Type, item.Title)
 		keys = append(keys, pattern)
 		values = append(values, id)
 	}

@@ -5,11 +5,9 @@ import (
 )
 
 var (
-	// Used for controller.UnbindCtrl and controller.AllowIssueCtrl.
-	// Callback: controller.InlBtnCancelCtrl.
+	// controller.UnbindCtrl -> controller.InlCancelBtnCtrl
 	InlineBtnCancel = &telebot.InlineButton{Unique: "btn_cancel", Text: "Cancel"}
 
-	// Used for controller.UnbindCtrl.
-	// Callback: controller.InlBtnUnbindCtrl.
+	// controller.UnbindCtrl -> controller.InlUnbindBtnCtrl
 	InlineBtnUnbind = &telebot.InlineButton{Unique: "btn_unbind", Text: "Unbind"}
 )

@@ -1,4 +1,4 @@
-package wechat
+package serverchan
 
 import (
 	"github.com/Aoi-hosizora/go-serverchan"

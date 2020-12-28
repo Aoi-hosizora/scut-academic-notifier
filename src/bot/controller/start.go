@@ -7,20 +7,19 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 )
 
-// noinspection GoSnakeCaseUsage
 const (
-	START = "Here is aoihosizora's scut academic notifier bot. See /help for help."
+	START = "Here is aoihosizora's scut academic notifier bot, developed by @Aoi_Hosizora. See /help for help."
 	HELP  = `*Common*
 /start - show start message
 /help - show this help message
 /cancel - cancel the last action
 
 *Account*
-/bind - bind with sckey
+/bind - bind with sckey (to telegram and wechat)
 /unbind - unbind this chat
 
 *Notifier*
-/send - send the current notices
+/send - send the current notices to telegram
 
 *Bug report*
 https://github.com/Aoi-hosizora/scut-academic-notifier/issues/new
@@ -57,7 +56,9 @@ func HelpCtrl(m *telebot.Message) {
 // /cancel
 func CancelCtrl(m *telebot.Message) {
 	if server.Bot.GetStatus(m.Chat.ID) == fsm.None {
-		_ = server.Bot.Reply(m, NO_ACTION)
+		_ = server.Bot.Reply(m, NO_ACTION, &telebot.ReplyMarkup{
+			ReplyKeyboardRemove: true,
+		})
 	} else {
 		server.Bot.SetStatus(m.Chat.ID, fsm.None)
 		_ = server.Bot.Reply(m, ACTION_CANCELED, &telebot.ReplyMarkup{
@@ -70,7 +71,7 @@ func CancelCtrl(m *telebot.Message) {
 func OnTextCtrl(m *telebot.Message) {
 	switch server.Bot.GetStatus(m.Chat.ID) {
 	case fsm.Binding:
-		fromBindingCtrl(m)
+		FromBindingCtrl(m)
 	default:
 		_ = server.Bot.Reply(m, fmt.Sprintf(UNKNOWN_COMMAND, m.Text))
 	}

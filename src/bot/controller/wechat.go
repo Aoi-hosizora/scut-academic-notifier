@@ -7,9 +7,9 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/button"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/fsm"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
+	serverchan2 "github.com/Aoi-hosizora/scut-academic-notifier/src/bot/serverchan"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
-	"github.com/Aoi-hosizora/scut-academic-notifier/src/wechat"
 	"gopkg.in/tucnak/telebot.v2"
 	"strings"
 )
@@ -26,9 +26,9 @@ func BindCtrl(m *telebot.Message) {
 }
 
 // /bind -> x
-func fromBindingCtrl(m *telebot.Message) {
+func FromBindingCtrl(m *telebot.Message) {
 	sckey := strings.TrimSpace(m.Text)
-	ok, err := wechat.CheckSckey(sckey, "A test message for binding by telebot")
+	ok, err := serverchan2.CheckSckey(sckey, "A test message for binding by telebot")
 	if err != nil {
 		server.Bot.SetStatus(m.Chat.ID, fsm.None)
 		_ = server.Bot.Reply(m, BIND_FAILED)
