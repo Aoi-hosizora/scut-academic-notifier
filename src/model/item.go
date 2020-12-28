@@ -2,37 +2,30 @@ package model
 
 import "fmt"
 
-// A render result item of jw and se.
-type Item struct {
-	Title string
-	Url   string
-	Type  string
-	Date  string
+type PostItem struct {
+	Title string `json:"title"`
+	Url   string `json:"url"`
+	Type  string `json:"type"`
+	Date  string `json:"date"`
 }
 
-func (d *Item) String() string {
+func (d *PostItem) String() string {
 	return fmt.Sprintf("%s: [%s](%s) - %s", d.Type, d.Title, d.Url, d.Date)
 }
 
-// An item of jw.
-type JwItem struct {
-	List []*struct {
-		CreateTime string `json:"createTime"`
-		Id         string `json:"id"`
-		IsNew      bool   `json:"isNew"`
-		Tag        int    `json:"tag"`
-		Title      string `json:"title"`
-	} `json:"list"`
-	Message string `json:"message"`
-	PageNum int    `json:"pagenum"`
-	Row     int    `json:"row"`
-	Success bool   `json:"success"`
-	Total   int    `json:"total"`
-}
-
-// The whole page of a tag.
-type SePage struct {
-	TagPart string
-	TagName string
-	Content string
+func ItemSliceDiff(s1 []*PostItem, s2 []*PostItem) []*PostItem {
+	result := make([]*PostItem, 0)
+	for _, item1 := range s1 {
+		exist := false
+		for _, item2 := range s2 {
+			if item1.Type == item2.Type && item1.Title == item2.Title {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			result = append(result, item1)
+		}
+	}
+	return result
 }

@@ -25,7 +25,7 @@ func parseOldDataPattern(key string) (chatId int64, tag, title string) {
 	return
 }
 
-func GetOldData(chatId int64) ([]*model.Item, bool) {
+func GetOldData(chatId int64) ([]*model.PostItem, bool) {
 	conn, err := Redis.Dial()
 	if err != nil {
 		return nil, false
@@ -38,16 +38,16 @@ func GetOldData(chatId int64) ([]*model.Item, bool) {
 		return nil, false
 	}
 
-	items := make([]*model.Item, len(keys))
+	items := make([]*model.PostItem, len(keys))
 	for idx := range items {
 		_, tag, title := parseOldDataPattern(keys[idx])
-		items[idx] = &model.Item{Type: tag, Title: title}
+		items[idx] = &model.PostItem{Type: tag, Title: title}
 	}
 	return items, true
 
 }
 
-func SetOldData(chatId int64, items []*model.Item) bool {
+func SetOldData(chatId int64, items []*model.PostItem) bool {
 	conn, err := Redis.Dial()
 	if err != nil {
 		return false

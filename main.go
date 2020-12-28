@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
@@ -14,13 +13,13 @@ import (
 )
 
 var (
-	hHelp   = flag.Bool("h", false, "show help")
-	fConfig = flag.String("config", "./config.yaml", "config path")
+	fHelp   = flag.Bool("h", false, "show help")
+	fConfig = flag.String("config", "./config.yaml", "change the config path")
 )
 
 func main() {
 	flag.Parse()
-	if *hHelp {
+	if *fHelp {
 		flag.Usage()
 	} else {
 		run()
@@ -44,7 +43,7 @@ func run() {
 	if err != nil {
 		log.Fatalln("Failed to connect redis:", err)
 	}
-	fmt.Println()
+
 	err = bot.Setup()
 	if err != nil {
 		log.Fatalln("Failed to load telebot:", err)

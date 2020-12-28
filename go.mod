@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/Aoi-hosizora/ahlib v1.4.4
-	github.com/Aoi-hosizora/ahlib-db v1.4.4 // indirect
+	github.com/Aoi-hosizora/ahlib-db v1.4.4
 	github.com/Aoi-hosizora/ahlib-more v1.4.3 // indirect
 	github.com/Aoi-hosizora/ahlib-web v1.4.6
 	github.com/Aoi-hosizora/go-serverchan v1.0.0

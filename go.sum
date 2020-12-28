@@ -4,6 +4,7 @@ github.com/Aoi-hosizora/ahlib v1.2.7/go.mod h1:eEKG46B/pXMlv35xEAsU5bQiIdR+Mu9v0
 github.com/Aoi-hosizora/ahlib v1.4.3/go.mod h1:ylSsYucCsXhYPQwB041/SVjWlmYpvCEywbSZBu8Bx6o=
 github.com/Aoi-hosizora/ahlib v1.4.4 h1:V7oE9he+stSvfBI+9mjf6rUY1HrFvXzMAg7wSw96xYk=
 github.com/Aoi-hosizora/ahlib v1.4.4/go.mod h1:69tHdnDy1yjwzNKV4jD0ltnGxTWgFra+sqbadYc0Dmk=
+github.com/Aoi-hosizora/ahlib-db v1.4.4 h1:RtSxYOTZvSmMj2DPSwXgJ2E8sxu0tpSMK/awLPkNyRc=
 github.com/Aoi-hosizora/ahlib-db v1.4.4/go.mod h1:i3PoZkdm7uiweZ2eS4RPdRL4xXLrIyKd7cafBFOzLcI=
 github.com/Aoi-hosizora/ahlib-more v1.4.3/go.mod h1:FF9+fsvAoJcP9DZVZNCA/F+pamC0OgRknLLF2z6O/Ss=
 github.com/Aoi-hosizora/ahlib-web v1.2.10 h1:U4OXcqd3oRVaqAUPs6UJ/TWZnOROvzJG09KEuWfvvpY=
