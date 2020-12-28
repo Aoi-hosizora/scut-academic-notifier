@@ -3,7 +3,7 @@ package task
 import (
 	"fmt"
 	"github.com/Aoi-hosizora/ahlib/xslice"
-	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
@@ -100,7 +100,7 @@ func doForUser(user *model.User) {
 	sb.WriteString(moreStr)
 
 	msg := sb.String()
-	err = bot.SendToChat(user.ChatID, msg, telebot.ModeMarkdown)
+	err = server.Bot.SendToChat(user.ChatID, msg, telebot.ModeMarkdown)
 	if err != nil {
 		return
 	}

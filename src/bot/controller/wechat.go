@@ -2,8 +2,9 @@ package controller
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/ahlib-web/xstatus"
+	"github.com/Aoi-hosizora/ahlib/xstatus"
 	"github.com/Aoi-hosizora/go-serverchan"
+	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/button"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/fsm"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/database"
@@ -19,7 +20,7 @@ func BindCtrl(m *telebot.Message) {
 	if user != nil {
 		_ = server.Bot.Reply(m, BIND_ALREADY)
 	} else {
-		server.Bot.UsersData.SetStatus(m.Chat.ID, fsm.Binding)
+		server.Bot.SetStatus(m.Chat.ID, fsm.Binding)
 		_ = server.Bot.Reply(m, BIND_Q)
 	}
 }
@@ -29,7 +30,7 @@ func fromBindingCtrl(m *telebot.Message) {
 	sckey := strings.TrimSpace(m.Text)
 	ok, err := wechat.CheckSckey(sckey, "A test message for binding by telebot")
 	if err != nil {
-		server.Bot.UsersData.SetStatus(m.Chat.ID, fsm.None)
+		server.Bot.SetStatus(m.Chat.ID, fsm.None)
 		_ = server.Bot.Reply(m, BIND_FAILED)
 		return
 	}
@@ -41,7 +42,7 @@ func fromBindingCtrl(m *telebot.Message) {
 	user := &model.User{ChatID: m.Chat.ID, Sckey: sckey}
 	status := database.AddUser(user)
 
-	server.Bot.UsersData.SetStatus(m.Chat.ID, fsm.None)
+	server.Bot.SetStatus(m.Chat.ID, fsm.None)
 	if status == xstatus.DbExisted {
 		_ = server.Bot.Reply(m, BIND_ALREADY)
 	} else if status == xstatus.DbFailed {
@@ -59,7 +60,7 @@ func UnbindCtrl(m *telebot.Message) {
 	} else {
 		_ = server.Bot.Reply(m, fmt.Sprintf(UNBIND_Q, serverchan.Mask(user.Sckey)), &telebot.ReplyMarkup{
 			InlineKeyboard: [][]telebot.InlineButton{
-				{*server.Bot.InlineButtons["btn_unbind"]}, {*server.Bot.InlineButtons["btn_cancel"]},
+				{*button.InlineBtnUnbind}, {*button.InlineBtnCancel},
 			},
 		})
 	}
@@ -68,7 +69,7 @@ func UnbindCtrl(m *telebot.Message) {
 // inl:btn_unbind
 func InlUnbindBtnCtrl(c *telebot.Callback) {
 	m := c.Message
-	_ = server.Bot.Bot.Delete(m)
+	_ = server.Bot.Delete(m)
 
 	status := database.DeleteUser(m.Chat.ID)
 
@@ -84,7 +85,7 @@ func InlUnbindBtnCtrl(c *telebot.Callback) {
 // inl:btn_cancel
 func InlCancelBtnCtrl(c *telebot.Callback) {
 	m := c.Message
-	_ = server.Bot.Bot.Delete(m)
+	_ = server.Bot.Delete(m)
 
 	_ = server.Bot.Reply(m, ACTION_CANCELED)
 }

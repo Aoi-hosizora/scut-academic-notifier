@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/ahlib-web/xredis"
+	"github.com/Aoi-hosizora/ahlib-db/xredis"
 	"github.com/Aoi-hosizora/ahlib/xnumber"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
 	"github.com/gomodule/redigo/redis"
@@ -26,10 +26,14 @@ func parseOldDataPattern(key string) (chatId int64, tag, title string) {
 }
 
 func GetOldData(chatId int64) ([]*model.Item, bool) {
-	pattern := getOldDataPattern(xnumber.FormatInt64(chatId, 10), "*", "*")
-	redisMu.Lock()
-	keys, err := redis.Strings(Conn.Do("KEYS", pattern))
-	redisMu.Unlock()
+	conn, err := Redis.Dial()
+	if err != nil {
+		return nil, false
+	}
+	defer conn.Close()
+
+	pattern := getOldDataPattern(xnumber.I64toa(chatId), "*", "*")
+	keys, err := redis.Strings(conn.Do("KEYS", pattern))
 	if err != nil {
 		return nil, false
 	}
@@ -44,10 +48,14 @@ func GetOldData(chatId int64) ([]*model.Item, bool) {
 }
 
 func SetOldData(chatId int64, items []*model.Item) bool {
-	pattern := getOldDataPattern(xnumber.FormatInt64(chatId, 10), "*", "*")
-	redisMu.Lock()
-	tot, del, err := xredis.WithConn(Conn).DeleteAll(pattern)
-	redisMu.Unlock()
+	conn, err := Redis.Dial()
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	pattern := getOldDataPattern(xnumber.I64toa(chatId), "*", "*")
+	tot, del, err := xredis.WithConn(conn).DeleteAll(pattern)
 	if err != nil || (tot != 0 && del == 0) {
 		return false
 	}
@@ -55,14 +63,12 @@ func SetOldData(chatId int64, items []*model.Item) bool {
 	keys := make([]string, 0)
 	values := make([]string, 0)
 	for _, item := range items {
-		id := xnumber.FormatInt64(chatId, 10)
+		id := xnumber.I64toa(chatId)
 		pattern := getOldDataPattern(id, item.Type, item.Title)
 		keys = append(keys, pattern)
 		values = append(values, id)
 	}
 
-	redisMu.Lock()
-	tot, add, err := xredis.WithConn(Conn).SetAll(keys, values)
-	redisMu.Unlock()
+	tot, add, err := xredis.WithConn(conn).SetAll(keys, values)
 	return err == nil && (tot == 0 || add >= 1)
 }

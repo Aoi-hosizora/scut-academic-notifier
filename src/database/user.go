@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/Aoi-hosizora/ahlib-web/xgorm"
-	"github.com/Aoi-hosizora/ahlib-web/xstatus"
+	"github.com/Aoi-hosizora/ahlib-db/xgorm"
+	"github.com/Aoi-hosizora/ahlib/xstatus"
 	"github.com/Aoi-hosizora/scut-academic-notifier/src/model"
 )
 
@@ -22,9 +22,13 @@ func GetUser(chatId int64) *model.User {
 }
 
 func AddUser(user *model.User) xstatus.DbStatus {
-	return xgorm.WithDB(DB).Insert(&model.User{}, user)
+	rdb := DB.Create(user)
+	sts, _ := xgorm.CreateErr(rdb)
+	return sts
 }
 
 func DeleteUser(chatId int64) xstatus.DbStatus {
-	return xgorm.WithDB(DB).Delete(&model.User{}, nil, &model.User{ChatID: chatId})
+	rdb := DB.Model(&model.User{}).Where(&model.User{ChatID: chatId}).Delete(&model.User{})
+	sts, _ := xgorm.DeleteErr(rdb)
+	return sts
 }

@@ -18,18 +18,15 @@ type BotConfig struct {
 	PollerTimeout uint64 `yaml:"poller-timeout"`
 }
 
-type SendConfig struct {
-	Range    int32 `yaml:"range"`
-	MaxCount int32 `yaml:"max-count"`
-}
-
 type MysqlConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Name     string `json:"name"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	LogMode  bool   `json:"log-mode"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	Name        string `yaml:"name"`
+	User        string `yaml:"user"`
+	Password    string `yaml:"password"`
+	MaxIdle     int32  `yaml:"max-idle"`
+	MaxActive   int32  `yaml:"max-active"`
+	MaxLifetime int32  `yaml:"max-lifetime"`
 }
 
 type RedisConfig struct {
@@ -40,6 +37,15 @@ type RedisConfig struct {
 	ConnectTimeout int32  `yaml:"connect-timeout"`
 	ReadTimeout    int32  `yaml:"read-timeout"`
 	WriteTimeout   int32  `yaml:"write-timeout"`
+	MaxIdle        int32  `yaml:"max-idle"`
+	MaxActive      int32  `yaml:"max-active"`
+	MaxLifetime    int32  `yaml:"max-lifetime"`
+	IdleTimeout    int32  `yaml:"idle-timeout"`
+}
+
+type SendConfig struct {
+	Range    int32 `yaml:"range"`
+	MaxCount int32 `yaml:"max-count"`
 }
 
 type TaskConfig struct {
@@ -49,9 +55,9 @@ type TaskConfig struct {
 type Config struct {
 	Meta  *MetaConfig  `yaml:"meta"`
 	Bot   *BotConfig   `yaml:"bot"`
-	Send  *SendConfig  `yaml:"send"`
 	Mysql *MysqlConfig `yaml:"mysql"`
 	Redis *RedisConfig `yaml:"redis"`
+	Send  *SendConfig  `yaml:"send"`
 	Task  *TaskConfig  `yaml:"task"`
 }
 

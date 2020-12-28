@@ -56,10 +56,10 @@ func HelpCtrl(m *telebot.Message) {
 
 // /cancel
 func CancelCtrl(m *telebot.Message) {
-	if server.Bot.UsersData.GetStatus(m.Chat.ID) == fsm.None {
+	if server.Bot.GetStatus(m.Chat.ID) == fsm.None {
 		_ = server.Bot.Reply(m, NO_ACTION)
 	} else {
-		server.Bot.UsersData.SetStatus(m.Chat.ID, fsm.None)
+		server.Bot.SetStatus(m.Chat.ID, fsm.None)
 		_ = server.Bot.Reply(m, ACTION_CANCELED, &telebot.ReplyMarkup{
 			ReplyKeyboardRemove: true,
 		})
@@ -68,7 +68,7 @@ func CancelCtrl(m *telebot.Message) {
 
 // $onText
 func OnTextCtrl(m *telebot.Message) {
-	switch server.Bot.UsersData.GetStatus(m.Chat.ID) {
+	switch server.Bot.GetStatus(m.Chat.ID) {
 	case fsm.Binding:
 		fromBindingCtrl(m)
 	default:
