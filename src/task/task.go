@@ -53,11 +53,11 @@ func task() {
 	foreachUsers(users, func(user *model.User) {
 		// get new items
 		jwItems, err := service.GetJwItems()
-		if err != nil || len(jwItems) == 0 {
+		if err != nil {
 			return
 		}
 		seItems, err := service.GetSeItems()
-		if err != nil || len(seItems) == 0 {
+		if err != nil {
 			return
 		}
 
@@ -73,6 +73,9 @@ func task() {
 				newItems = append(newItems, se)
 			}
 		}
+		if len(newItems) == 0 {
+			return
+		}
 
 		// get old items and get diff
 		oldItems, ok := database.GetOldItems(user.ChatID)
@@ -82,6 +85,9 @@ func task() {
 		logger.Logger.Infof("Get old data: #%d | %d", len(oldItems), user.ChatID)
 		sendItems := model.ItemSliceDiff(newItems, oldItems)
 		logger.Logger.Infof("Get diff data: #%d | %d", len(sendItems), user.ChatID)
+		if len(sendItems) == 0 {
+			return
+		}
 
 		// update old items
 		ok = database.SetOldItems(user.ChatID, newItems)
