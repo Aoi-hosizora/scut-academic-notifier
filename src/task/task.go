@@ -53,11 +53,11 @@ func task() {
 	foreachUsers(users, func(user *model.User) {
 		// get new items
 		jwItems, err := service.GetJwItems()
-		if err != nil {
+		if err != nil || len(jwItems) == 0 {
 			return
 		}
 		seItems, err := service.GetSeItems()
-		if err != nil {
+		if err != nil || len(seItems) == 0 {
 			return
 		}
 
