@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/serverchan"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/logger"
@@ -44,10 +43,6 @@ func main() {
 	err = bot.Setup()
 	if err != nil {
 		log.Fatalln("Failed to setup telebot:", err)
-	}
-	err = serverchan.Setup()
-	if err != nil {
-		log.Fatalln("Failed to load serverchan:", err)
 	}
 	err = task.Setup()
 	if err != nil {

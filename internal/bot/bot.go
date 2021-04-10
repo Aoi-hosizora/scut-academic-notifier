@@ -3,7 +3,6 @@ package bot
 import (
 	"github.com/Aoi-hosizora/ahlib-web/xrecovery"
 	"github.com/Aoi-hosizora/ahlib/xruntime"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/button"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/controller"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
@@ -21,7 +20,7 @@ func Setup() error {
 			Timeout: time.Second * time.Duration(config.Configs().Bot.PollerTimeout),
 		},
 		Reporter: func(err error) {
-			xrecovery.LogToLogrus(logger.Logger(), err, xruntime.RuntimeTraceStack(0))
+			xrecovery.LogToLogrus(logger.Logger(), err, xruntime.RuntimeTraceStack(4))
 		},
 	})
 	if err != nil {
@@ -39,14 +38,9 @@ func setupHandler(b *server.BotServer) {
 	// start
 	b.HandleMessage("/start", controller.StartCtrl)
 	b.HandleMessage("/help", controller.HelpCtrl)
-	b.HandleMessage("/cancel", controller.CancelCtrl)
+	b.HandleMessage("/subscribe", controller.SubscribeCtrl)
+	b.HandleMessage("/unsubscribe", controller.UnsubscribeCtrl)
 	b.HandleMessage(telebot.OnText, controller.OnTextCtrl)
-
-	// wechat
-	b.HandleMessage("/bind", controller.BindCtrl)
-	b.HandleMessage("/unbind", controller.UnbindCtrl)
-	b.HandleInline(button.InlineBtnUnbind, controller.InlineBtnUnbindCtrl)
-	b.HandleInline(button.InlineBtnCancel, controller.InlineBtnCancelCtrl)
 
 	// notifier
 	b.HandleMessage("/send", controller.SendCtrl)

@@ -5,20 +5,18 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/model"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/dao"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/service"
 	"gopkg.in/tucnak/telebot.v2"
 	"strings"
 )
 
+const (
+	GET_DATA_FAILED = "Failed to get notice information, please retry later."
+	NO_NEW_DATA     = "There is no notice."
+)
+
 // /send
 func SendCtrl(m *telebot.Message) {
-	user := dao.GetUser(m.Chat.ID)
-	if user == nil {
-		_ = server.Bot().Reply(m, BIND_NOT_YET)
-		return
-	}
-
 	jwItems, err := service.GetJwItems()
 	if err != nil {
 		_ = server.Bot().Reply(m, GET_DATA_FAILED)
@@ -32,12 +30,12 @@ func SendCtrl(m *telebot.Message) {
 
 	items := make([]*model.PostItem, 0)
 	for _, jw := range jwItems {
-		if service.CheckTime(jw.Date, config.Configs().Send.Range) {
+		if service.CheckInTimeRange(jw.Date, config.Configs().Send.TimeRange) {
 			items = append(items, jw)
 		}
 	}
 	for _, se := range seItems {
-		if service.CheckTime(se.Date, config.Configs().Send.Range) {
+		if service.CheckInTimeRange(se.Date, config.Configs().Send.TimeRange) {
 			items = append(items, se)
 		}
 	}
@@ -51,10 +49,8 @@ func SendCtrl(m *telebot.Message) {
 	for idx, item := range items {
 		sb.WriteString(fmt.Sprintf("%d. %s\n", idx+1, item.String()))
 	}
-	sb.WriteString(fmt.Sprintf(
-		"===== \n更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。",
-		service.JwHomepage, service.SeHomepage,
-	))
+	footer := fmt.Sprintf("=====\n更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。", service.JwHomepage, service.SeHomepage)
+	sb.WriteString(footer)
 
 	msg := sb.String()
 	_ = server.Bot().Reply(m, msg, telebot.ModeMarkdown)

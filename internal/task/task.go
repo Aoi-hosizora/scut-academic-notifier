@@ -3,7 +3,6 @@ package task
 import (
 	"fmt"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/serverchan"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/model"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/dao"
@@ -11,7 +10,6 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/service"
 	"github.com/robfig/cron/v3"
 	"gopkg.in/tucnak/telebot.v2"
-	"math"
 	"strings"
 	"sync"
 )
@@ -51,7 +49,7 @@ func foreachUsers(users []*model.User, fn func(user *model.User)) {
 func task() {
 	defer func() { recover() }()
 
-	users := dao.GetUsers()
+	users := dao.QueryUsers()
 	if len(users) == 0 {
 		return
 	}
@@ -70,12 +68,12 @@ func task() {
 		// filter new items
 		newItems := make([]*model.PostItem, 0)
 		for _, jw := range jwItems {
-			if service.CheckTime(jw.Date, config.Configs().Send.Range) {
+			if service.CheckInTimeRange(jw.Date, config.Configs().Send.TimeRange) {
 				newItems = append(newItems, jw)
 			}
 		}
 		for _, se := range seItems {
-			if service.CheckTime(se.Date, config.Configs().Send.Range) {
+			if service.CheckInTimeRange(se.Date, config.Configs().Send.TimeRange) {
 				newItems = append(newItems, se)
 			}
 		}
@@ -83,62 +81,36 @@ func task() {
 			return
 		}
 
-		// get old items and get diff
+		// get old items and calc diff
 		oldItems, ok := dao.GetOldItems(user.ChatID)
 		if !ok {
 			return
 		}
-		logger.Logger().Infof("Get old data: #%d | %d", len(oldItems), user.ChatID)
-		sendItems := model.ItemSliceDiff(newItems, oldItems)
-		logger.Logger().Infof("Get diff data: #%d | %d", len(sendItems), user.ChatID)
-		if len(sendItems) == 0 {
+		logger.Logger().Infof("Get old items: #%d | %d", len(oldItems), user.ChatID)
+		diff := model.ItemSliceDiff(newItems, oldItems)
+		logger.Logger().Infof("Get diff items: #%d | %d", len(diff), user.ChatID)
+		if len(diff) == 0 {
 			return
 		}
 
 		// update old items
 		ok = dao.SetOldItems(user.ChatID, newItems)
-		logger.Logger().Infof("Set new data: #%d | %d", len(newItems), user.ChatID)
 		if !ok {
 			return
 		}
+		logger.Logger().Infof("Set new items: #%d | %d", len(newItems), user.ChatID)
 
-		// ===============
-		// render and send
-		// ===============
-
-		moreStr := fmt.Sprintf("更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。", service.JwHomepage, service.SeHomepage)
-
-		// send to telebot
+		// render
 		sb := strings.Builder{}
 		sb.WriteString("*学校相关通知*\n=====\n")
-		for idx, item := range sendItems {
+		for idx, item := range diff {
 			sb.WriteString(fmt.Sprintf("%d. %s\n", idx+1, item.String()))
 		}
-		sb.WriteString("=====\n")
-		sb.WriteString(moreStr)
-		msg := sb.String()
-		_ = server.Bot().SendToChat(user.ChatID, msg, telebot.ModeMarkdown)
+		footer := fmt.Sprintf("=====\n更多信息，请查阅 [华工教务通知](%s) 以及 [软院公务通知](%s)。", service.JwHomepage, service.SeHomepage)
+		sb.WriteString(footer)
+		render := sb.String()
 
-		// send to wechat
-		maxCnt := int(config.Configs().Send.MaxCount)
-		sendTimes := int(math.Ceil(float64(len(sendItems)) / float64(maxCnt)))
-		for i := 0; i < sendTimes; i++ {
-			from := i * maxCnt
-			to := (i + 1) * maxCnt
-			if l := len(sendItems); to > l {
-				to = l
-			}
-			sb := strings.Builder{}
-			for j := from; j < to; j++ {
-				sb.WriteString(fmt.Sprintf("%d. %s\n", j+1, sendItems[j].String()))
-			}
-			if i == sendTimes-1 {
-				sb.WriteString("\n--- \n")
-				sb.WriteString(moreStr)
-			}
-			msg := sb.String()
-			title := fmt.Sprintf("学校相关通知 (第 %d 条，共 %d 条)", i+1, sendTimes)
-			_ = serverchan.SendToChat(user.Sckey, title, msg)
-		}
+		// send
+		_ = server.Bot().SendToChat(user.ChatID, render, telebot.ModeMarkdown)
 	})
 }

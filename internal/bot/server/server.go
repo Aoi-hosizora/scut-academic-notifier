@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/Aoi-hosizora/ahlib-web/xtelebot"
 	"github.com/Aoi-hosizora/ahlib/xnumber"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/fsm"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/logger"
 	"gopkg.in/tucnak/telebot.v2"
@@ -26,10 +25,7 @@ type BotServer struct {
 }
 
 func NewBotServer(bot *telebot.Bot) *BotServer {
-	return &BotServer{
-		bot:  bot,
-		data: xtelebot.NewBotData(xtelebot.WithInitialStatus(fsm.None)),
-	}
+	return &BotServer{bot: bot, data: xtelebot.NewBotData()}
 }
 
 // ===
@@ -64,13 +60,13 @@ func (b *BotServer) sendTo(c *telebot.Chat, what interface{}, cb func(*telebot.M
 func (b *BotServer) Send(c *telebot.Chat, what interface{}, options ...interface{}) error {
 	return b.sendTo(c, what, func(msg *telebot.Message, err error) {
 		logger.Send(c, msg, err)
-	}, options)
+	}, options...)
 }
 
 func (b *BotServer) Reply(m *telebot.Message, what interface{}, options ...interface{}) error {
 	return b.sendTo(m.Chat, what, func(msg *telebot.Message, err error) {
 		logger.Reply(m, msg, err)
-	}, options)
+	}, options...)
 }
 
 func (b *BotServer) SendToChat(chatId int64, what interface{}, options ...interface{}) error {
@@ -114,28 +110,4 @@ func (b *BotServer) HandleReply(endpoint *telebot.ReplyButton, handler func(*tel
 		logger.Receive(endpoint, m)
 		handler(m)
 	})
-}
-
-// =======
-// BotData
-// =======
-
-func (b *BotServer) SetStatus(chatID int64, status xtelebot.ChatStatus) {
-	b.data.SetStatus(chatID, status)
-}
-
-func (b *BotServer) GetStatus(chatID int64) xtelebot.ChatStatus {
-	return b.data.GetStatusOrInit(chatID)
-}
-
-func (b *BotServer) SetCache(chatID int64, key string, value interface{}) {
-	b.data.SetCache(chatID, key, value)
-}
-
-func (b *BotServer) GetCache(chatID int64, key string) (interface{}, bool) {
-	return b.data.GetCache(chatID, key)
-}
-
-func (b *BotServer) RemoveCache(chatID int64, key string) {
-	b.data.RemoveCache(chatID, key)
 }

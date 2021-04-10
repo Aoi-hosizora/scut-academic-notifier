@@ -25,8 +25,7 @@ redis:
   max-idletime: 300  # second
 
 send:
-  range: 30 # day
-  max-count: 10 # wechat
+  time-range: 30 # day
 
 task:
   cron: 0 0/5 * * * *

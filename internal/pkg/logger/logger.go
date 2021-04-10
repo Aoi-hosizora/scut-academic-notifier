@@ -2,7 +2,6 @@ package logger
 
 import (
 	"github.com/Aoi-hosizora/ahlib-more/xlogrus"
-	"github.com/Aoi-hosizora/ahlib-web/xserverchan"
 	"github.com/Aoi-hosizora/ahlib-web/xtelebot"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/sirupsen/logrus"
@@ -54,9 +53,4 @@ func Reply(received, replied *telebot.Message, err error) {
 // Send is a global function to log send message to logrus.Logger.
 func Send(chat *telebot.Chat, sent *telebot.Message, err error) {
 	xtelebot.LogSendToLogrus(_logger, chat, sent, err)
-}
-
-// Serverchan is a global function to log serverchan's send message to logrus.Logger.
-func Serverchan(sckey, title, body string, err error) {
-	xserverchan.LogToLogrus(_logger, sckey, title, body, err)
 }

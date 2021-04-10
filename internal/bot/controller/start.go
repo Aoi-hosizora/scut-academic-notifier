@@ -2,45 +2,35 @@ package controller
 
 import (
 	"fmt"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/fsm"
+	"github.com/Aoi-hosizora/ahlib/xstatus"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
+	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/dao"
 	"gopkg.in/tucnak/telebot.v2"
 )
 
 const (
-	START = "Here is aoihosizora's scut academic notifier bot, developed by @Aoi_Hosizora. See /help for help."
-	HELP  = `*Common*
+	START = "Here is AoiHosizora's scut academic notifier bot, developed by @AoiHosizora. See /help to show help message."
+	HELP  = `*Commands*
 /start - show start message
 /help - show this help message
-/cancel - cancel the last action
-
-*Account*
-/bind - bind with sckey (to telegram and wechat)
-/unbind - unbind this chat
+/subscribe - subscribe this chat
+/unsubscribe - unsubscribe this chat
 
 *Notifier*
-/send - send the current notices to telegram
+/send - send the current notices
 
 *Bug report*
-https://github.com/Aoi-hosizora/scut-academic-notifier/issues/new
-`
+https://github.com/Aoi-hosizora/scut-academic-notifier/issues/new`
 
-	NO_ACTION       = "There is no action now."
-	ACTION_CANCELED = "Action has been canceled."
 	UNKNOWN_COMMAND = "Unknown command: %s. See /help for help."
 
-	BIND_ALREADY   = "You have already bound with a sckey."
-	BIND_NOT_YET   = "You have not bound yet, use /bind to bind."
-	BIND_Q         = "Please send a wechat sckey to bind. /cancel to cancel."
-	SCKEY_INVALID  = "Sckey is invalid, please check and resend one."
-	BIND_SUCCESS   = "Bind success, you will receive notifiers when updated."
-	BIND_FAILED    = "Failed to bind, please retry later."
-	UNBIND_Q       = "You have already bound with %s. Sure to unbind?"
-	UNBIND_SUCCESS = "Unbind success, you will not receive any notifiers now."
-	UNBIND_FAILED  = "Failed to unbind, please retry later."
+	SUBSCRIBE_ALREADY = "You have already subscribed this chat, use /unsubscribe to unsubscribe first."
+	SUBSCRIBE_FAILED  = "Failed to subscribe, please retry later."
+	SUBSCRIBE_SUCCESS = "Subscribe success, you will receive notifiers when updated."
 
-	GET_DATA_FAILED = "Failed to get notice information, please retry later."
-	NO_NEW_DATA     = "There is no new notice."
+	SUBSCRIBE_NOT_YET   = "You have not subscribe yet, use /subscribe to subscribe first."
+	UNSUBSCRIBE_FAILED  = "Failed to unsubscribe, please retry later."
+	UNSUBSCRIBE_SUCCESS = "Unsubscribe success, you will not receive any notifiers now."
 )
 
 // /start
@@ -53,26 +43,35 @@ func HelpCtrl(m *telebot.Message) {
 	_ = server.Bot().Reply(m, HELP, telebot.ModeMarkdown)
 }
 
-// /cancel
-func CancelCtrl(m *telebot.Message) {
-	if server.Bot().GetStatus(m.Chat.ID) == fsm.None {
-		_ = server.Bot().Reply(m, NO_ACTION, &telebot.ReplyMarkup{
-			ReplyKeyboardRemove: true,
-		})
+// /subscribe
+func SubscribeCtrl(m *telebot.Message) {
+	sts := dao.CreateUser(m.Chat.ID)
+	flag := ""
+	if sts == xstatus.DbExisted {
+		flag = SUBSCRIBE_ALREADY
+	} else if sts == xstatus.DbFailed {
+		flag = SUBSCRIBE_FAILED
 	} else {
-		server.Bot().SetStatus(m.Chat.ID, fsm.None)
-		_ = server.Bot().Reply(m, ACTION_CANCELED, &telebot.ReplyMarkup{
-			ReplyKeyboardRemove: true,
-		})
+		flag = SUBSCRIBE_SUCCESS
 	}
+	_ = server.Bot().Reply(m, flag)
+}
+
+// /unsubscribe
+func UnsubscribeCtrl(m *telebot.Message) {
+	sts := dao.DeleteUser(m.Chat.ID)
+	flag := ""
+	if sts == xstatus.DbNotFound {
+		flag = SUBSCRIBE_NOT_YET
+	} else if sts == xstatus.DbFailed {
+		flag = UNSUBSCRIBE_FAILED
+	} else {
+		flag = UNSUBSCRIBE_SUCCESS
+	}
+	_ = server.Bot().Reply(m, flag)
 }
 
 // $on_text
 func OnTextCtrl(m *telebot.Message) {
-	switch server.Bot().GetStatus(m.Chat.ID) {
-	case fsm.Binding:
-		FromBindingCtrl(m)
-	default:
-		_ = server.Bot().Reply(m, fmt.Sprintf(UNKNOWN_COMMAND, m.Text))
-	}
+	_ = server.Bot().Reply(m, fmt.Sprintf(UNKNOWN_COMMAND, m.Text))
 }

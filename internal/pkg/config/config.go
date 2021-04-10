@@ -53,8 +53,7 @@ type RedisConfig struct {
 }
 
 type SendConfig struct {
-	Range    int32 `yaml:"range"`
-	MaxCount int32 `yaml:"max-count"`
+	TimeRange int32 `yaml:"time-range"`
 }
 
 type TaskConfig struct {
