@@ -26,7 +26,7 @@ func parsePattern(key string) (chatID int64, tag, title string) {
 	return
 }
 
-func GetOldItems(chatID int64) ([]*model.PostItem, bool) {
+func GetPostItems(chatID int64) ([]*model.PostItem, bool) {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
 	keys, err := database.Redis().Keys(context.Background(), pattern).Result()
 	if err != nil {
@@ -41,7 +41,7 @@ func GetOldItems(chatID int64) ([]*model.PostItem, bool) {
 	return items, true
 }
 
-func SetOldItems(chatID int64, items []*model.PostItem) bool {
+func SetPostItems(chatID int64, items []*model.PostItem) bool {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
 	_, err := xredis.DelAll(database.Redis(), context.Background(), pattern)
 	if err != nil {

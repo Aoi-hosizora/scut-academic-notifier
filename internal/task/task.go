@@ -82,7 +82,7 @@ func task() {
 		}
 
 		// get old items and calc diff
-		oldItems, ok := dao.GetOldItems(user.ChatID)
+		oldItems, ok := dao.GetPostItems(user.ChatID)
 		if !ok {
 			return
 		}
@@ -94,7 +94,7 @@ func task() {
 		}
 
 		// update old items
-		ok = dao.SetOldItems(user.ChatID, newItems)
+		ok = dao.SetPostItems(user.ChatID, newItems)
 		if !ok {
 			return
 		}
