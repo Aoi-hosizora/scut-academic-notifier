@@ -14,15 +14,15 @@ import (
 	"time"
 )
 
-type Server struct {
-	bot *xtelebot.BotWrapper
+type Consumer struct {
+	bw *xtelebot.BotWrapper
 }
 
-func (s *Server) Bot() *xtelebot.BotWrapper {
-	return s.bot
+func (s *Consumer) BotWrapper() *xtelebot.BotWrapper {
+	return s.bw
 }
 
-func NewServer() (*Server, error) {
+func NewConsumer() (*Consumer, error) {
 	// telebot
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:   config.Configs().Meta.Token,
@@ -32,7 +32,6 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("[Bot] Success to connect telegram bot:", bot.Me.Username)
 
 	// wrapper
 	bw := xtelebot.NewBotWrapper(bot)
@@ -46,7 +45,7 @@ func NewServer() (*Server, error) {
 	// handlers
 	setupHandlers(bw)
 
-	s := &Server{bot: bw}
+	s := &Consumer{bw: bw}
 	return s, nil
 }
 
@@ -55,10 +54,10 @@ func setupLoggers(bw *xtelebot.BotWrapper) {
 	bw.SetReceivedCallback(func(endpoint interface{}, received *telebot.Message) {
 		xtelebot.LogReceiveToLogrus(l, endpoint, received)
 	})
-	bw.SetAfterRepliedCallback(func(received *telebot.Message, replied *telebot.Message, err error) {
+	bw.SetRepliedCallback(func(received *telebot.Message, replied *telebot.Message, err error) {
 		xtelebot.LogReplyToLogrus(l, received, replied, err)
 	})
-	bw.SetAfterSentCallback(func(chat *telebot.Chat, sent *telebot.Message, err error) {
+	bw.SetSentCallback(func(chat *telebot.Chat, sent *telebot.Message, err error) {
 		xtelebot.LogSendToLogrus(l, chat, sent, err)
 	})
 	bw.SetPanicHandler(func(endpoint interface{}, v interface{}) {
@@ -66,21 +65,19 @@ func setupLoggers(bw *xtelebot.BotWrapper) {
 	})
 }
 
-func (s *Server) RunBot() {
-	log.Println("[Bot] Starting consuming incoming bot update")
-	s.bot.Bot().Start()
+func (s *Consumer) Start() {
+	log.Printf("[Bot] Starting consuming incoming update on bot %s", s.bw.Bot().Me.Username)
+	s.bw.Bot().Start() // block to poll and consume
 }
 
 func setupHandlers(bw *xtelebot.BotWrapper) {
 	// start
 	bw.HandleCommand("/start", controller.StartCtrl)
 	bw.HandleCommand("/help", controller.HelpCtrl)
-	bw.HandleCommand("/subscribe", controller.SubscribeCtrl)
-	bw.HandleCommand("/unsubscribe", controller.UnsubscribeCtrl)
+	bw.HandleCommand(telebot.OnText, controller.OnTextCtrl)
 
 	// notifier
+	bw.HandleCommand("/subscribe", controller.SubscribeCtrl)
+	bw.HandleCommand("/unsubscribe", controller.UnsubscribeCtrl)
 	bw.HandleCommand("/send", controller.SendCtrl)
-
-	// text
-	bw.HandleCommand(telebot.OnText, controller.OnTextCtrl)
 }

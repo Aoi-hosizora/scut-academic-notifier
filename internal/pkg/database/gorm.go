@@ -48,7 +48,7 @@ func SetupGormDB() error {
 
 func migrateDB(db *gorm.DB) error {
 	for _, m := range []interface{}{
-		&model.User{},
+		&model.Chat{},
 	} {
 		rdb := db.AutoMigrate(m)
 		if rdb.Error != nil {

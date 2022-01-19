@@ -1,20 +1,17 @@
 package service
 
 import (
+	"context"
+	"errors"
 	"io/ioutil"
 	"net/http"
-)
-
-const (
-	JwApi = "http://api.common.aoihosizora.top/scut/jw"
-	SeApi = "http://api.common.aoihosizora.top/scut/se"
-
-	JwHomepage = "http://jw.scut.edu.cn/zhinan/cms/index.do"
-	SeHomepage = "http://www2.scut.edu.cn/sse/xyjd_17232/list.htm"
+	"time"
 )
 
 func httpGet(url string) ([]byte, *http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -23,6 +20,9 @@ func httpGet(url string) ([]byte, *http.Response, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, nil, errors.New("service: get non-200 response")
 	}
 
 	body := resp.Body

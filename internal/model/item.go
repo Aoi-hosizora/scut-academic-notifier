@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/Aoi-hosizora/ahlib/xslice"
 )
 
@@ -12,8 +11,10 @@ type PostItem struct {
 	Date  string `json:"date"`
 }
 
-func (d *PostItem) String() string {
-	return fmt.Sprintf("%s: [%s](%s) - %s", d.Type, d.Title, d.Url, d.Date)
+type PostItemDto struct {
+	Data struct {
+		Data []*PostItem `json:"data"`
+	} `json:"data"`
 }
 
 func ItemSliceDiff(s1 []*PostItem, s2 []*PostItem) []*PostItem {
@@ -21,10 +22,4 @@ func ItemSliceDiff(s1 []*PostItem, s2 []*PostItem) []*PostItem {
 		p1, p2 := i.(*PostItem), j.(*PostItem)
 		return p1.Title == p2.Title && p1.Type == p2.Type
 	}).([]*PostItem)
-}
-
-type PostItemDto struct {
-	Data struct {
-		Data []*PostItem `json:"data"`
-	} `json:"data"`
 }

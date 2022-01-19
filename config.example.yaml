@@ -24,4 +24,4 @@ redis:
 
 task:
   notifier-cron: 0 0/10 * * * *
-  notifier-time-range: 30 # day
+  notifier-time-range: 60 # day

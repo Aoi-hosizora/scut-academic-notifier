@@ -40,17 +40,17 @@ func main() {
 		log.Fatalln("Failed to setup redis client:", err)
 	}
 
-	s, err := bot.NewServer()
+	c, err := bot.NewConsumer()
 	if err != nil {
-		log.Fatalln("Failed to create telebot server:", err)
+		log.Fatalln("Failed to create consumer:", err)
 	}
-	t, err := task.NewTask(s.Bot())
+	t, err := task.NewTask(c.BotWrapper())
 	if err != nil {
-		log.Fatalln("Failed to create cron task:", err)
+		log.Fatalln("Failed to create task:", err)
 	}
 
 	fmt.Println()
 	t.Start()
 	defer t.Finish()
-	s.RunBot()
+	c.Start()
 }
