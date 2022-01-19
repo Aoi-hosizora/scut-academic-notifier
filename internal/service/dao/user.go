@@ -9,18 +9,18 @@ import (
 
 func QueryUsers() []*model.User {
 	users := make([]*model.User, 0)
-	database.DB().Model(&model.User{}).Find(&users)
+	database.GormDB().Model(&model.User{}).Find(&users)
 	return users
 }
 
 func CreateUser(chatID int64) xstatus.DbStatus {
-	rdb := database.DB().Create(&model.User{ChatID: chatID})
+	rdb := database.GormDB().Create(&model.User{ChatID: chatID})
 	sts, _ := xgorm.CreateErr(rdb)
 	return sts
 }
 
 func DeleteUser(chatID int64) xstatus.DbStatus {
-	rdb := database.DB().Model(&model.User{}).Where("chat_id = ?", chatID).Delete(&model.User{})
+	rdb := database.GormDB().Model(&model.User{}).Where("chat_id = ?", chatID).Delete(&model.User{})
 	sts, _ := xgorm.DeleteErr(rdb)
 	return sts
 }

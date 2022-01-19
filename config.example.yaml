@@ -1,11 +1,8 @@
 meta:
   run-mode: debug
   log-name: ./logs/console
-
-bot:
   token: xxx
   poller-timeout: 600 # second
-  retry-count: 5
 
 sqlite:
   database: database.db
@@ -20,12 +17,11 @@ redis:
   dial-timeout: 5  # second
   read-timeout: 3  # second
   write-timeout: 3 # second
-  max-open: 60
+  max-opens: 60
+  min-idles: 1
   max-lifetime: 3600 # second
   max-idletime: 300  # second
 
-send:
-  time-range: 30 # day
-
 task:
-  cron: 0 0/5 * * * *
+  notifier-cron: 0 0/10 * * * *
+  notifier-time-range: 30 # day

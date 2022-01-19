@@ -2,9 +2,9 @@ package controller
 
 import (
 	"fmt"
+	"github.com/Aoi-hosizora/ahlib-web/xtelebot"
 	"github.com/Aoi-hosizora/ahlib/xstatus"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/dao"
+	"github.com/Aoi-hosizora/scut-academic-notifier/internal/service/dao"
 	"gopkg.in/tucnak/telebot.v2"
 )
 
@@ -33,18 +33,18 @@ https://github.com/Aoi-hosizora/scut-academic-notifier/issues/new`
 	UNSUBSCRIBE_SUCCESS = "Unsubscribe success, you will not receive any notifiers now."
 )
 
-// /start
-func StartCtrl(m *telebot.Message) {
-	_ = server.Bot().Reply(m, START)
+// StartCtrl /start
+func StartCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	bw.ReplyTo(m, START)
 }
 
-// /help
-func HelpCtrl(m *telebot.Message) {
-	_ = server.Bot().Reply(m, HELP, telebot.ModeMarkdown)
+// HelpCtrl /help
+func HelpCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	bw.ReplyTo(m, HELP, telebot.ModeMarkdown)
 }
 
-// /subscribe
-func SubscribeCtrl(m *telebot.Message) {
+// SubscribeCtrl /subscribe
+func SubscribeCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
 	sts := dao.CreateUser(m.Chat.ID)
 	flag := ""
 	if sts == xstatus.DbExisted {
@@ -54,11 +54,11 @@ func SubscribeCtrl(m *telebot.Message) {
 	} else {
 		flag = SUBSCRIBE_SUCCESS
 	}
-	_ = server.Bot().Reply(m, flag)
+	bw.ReplyTo(m, flag)
 }
 
-// /unsubscribe
-func UnsubscribeCtrl(m *telebot.Message) {
+// UnsubscribeCtrl /unsubscribe
+func UnsubscribeCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
 	sts := dao.DeleteUser(m.Chat.ID)
 	flag := ""
 	if sts == xstatus.DbNotFound {
@@ -68,10 +68,10 @@ func UnsubscribeCtrl(m *telebot.Message) {
 	} else {
 		flag = UNSUBSCRIBE_SUCCESS
 	}
-	_ = server.Bot().Reply(m, flag)
+	bw.ReplyTo(m, flag)
 }
 
-// $on_text
-func OnTextCtrl(m *telebot.Message) {
-	_ = server.Bot().Reply(m, fmt.Sprintf(UNKNOWN_COMMAND, m.Text))
+// OnTextCtrl $on_text
+func OnTextCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	bw.ReplyTo(m, fmt.Sprintf(UNKNOWN_COMMAND, m.Text))
 }

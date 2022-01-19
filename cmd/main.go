@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/server"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/database"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/logger"
@@ -31,27 +31,26 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to setup logger:", err)
 	}
-	err = database.SetupGorm()
+	err = database.SetupGormDB()
 	if err != nil {
-		log.Fatalln("Failed to setup gorm:", err)
+		log.Fatalln("Failed to setup gorm db:", err)
 	}
-	err = database.SetupRedis()
+	err = database.SetupRedisClient()
 	if err != nil {
-		log.Fatalln("Failed to setup redis:", err)
-	}
-
-	err = bot.Setup()
-	if err != nil {
-		log.Fatalln("Failed to setup telebot:", err)
-	}
-	err = task.Setup()
-	if err != nil {
-		log.Fatalln("Failed to setup cron:", err)
+		log.Fatalln("Failed to setup redis client:", err)
 	}
 
-	defer task.Cron().Stop()
-	task.Cron().Start()
+	s, err := bot.NewServer()
+	if err != nil {
+		log.Fatalln("Failed to create telebot server:", err)
+	}
+	t, err := task.NewTask(s.Bot())
+	if err != nil {
+		log.Fatalln("Failed to create cron task:", err)
+	}
 
-	defer server.Bot().Stop()
-	server.Bot().Start()
+	fmt.Println()
+	t.Start()
+	defer t.Finish()
+	s.RunBot()
 }

@@ -28,7 +28,7 @@ func parsePattern(key string) (chatID int64, tag, title string) {
 
 func GetPostItems(chatID int64) ([]*model.PostItem, bool) {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
-	keys, err := database.Redis().Keys(context.Background(), pattern).Result()
+	keys, err := database.RedisClient().Keys(context.Background(), pattern).Result()
 	if err != nil {
 		return nil, false
 	}
@@ -43,20 +43,18 @@ func GetPostItems(chatID int64) ([]*model.PostItem, bool) {
 
 func SetPostItems(chatID int64, items []*model.PostItem) bool {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
-	_, err := xredis.DelAll(database.Redis(), context.Background(), pattern)
+	_, err := xredis.DelAll(context.Background(), database.RedisClient(), pattern)
 	if err != nil {
 		return false
 	}
 
-	keys := make([]string, 0)
-	values := make([]string, 0)
+	kvs := make([]interface{}, 0, len(items)*2)
 	for _, item := range items {
 		id := xnumber.I64toa(chatID)
 		pattern = concatPattern(id, item.Type, item.Title)
-		keys = append(keys, pattern)
-		values = append(values, id)
+		kvs = append(kvs, pattern, id)
 	}
 
-	_, err = xredis.SetAll(database.Redis(), context.Background(), keys, values)
+	err = database.RedisClient().MSet(context.Background(), kvs...).Err()
 	return err == nil
 }
