@@ -39,6 +39,7 @@ func SetupGormDB() error {
 	// migrate
 	err = migrateDB(db)
 	if err != nil {
+		_ = db.Close()
 		return err
 	}
 

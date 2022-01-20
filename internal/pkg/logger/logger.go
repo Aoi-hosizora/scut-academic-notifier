@@ -31,7 +31,7 @@ func Setup() error {
 
 	rotation, err := xrotation.New(
 		xrotation.WithFilenamePattern(config.Configs().Meta.LogName+".%Y%m%d.log"),
-		xrotation.WithSymlinkFilename(config.Configs().Meta.LogName+".log"),
+		xrotation.WithSymlinkFilename(config.Configs().Meta.LogName+"current.log"),
 		xrotation.WithRotationTime(24*time.Hour),
 		xrotation.WithRotationMaxAge(15*24*time.Hour),
 		xrotation.WithClock(xtime.Local),
@@ -39,8 +39,10 @@ func Setup() error {
 	if err != nil {
 		return err
 	}
-	logger.AddHook(xlogrus.NewRotationHook(rotation, xlogrus.WithLevel(level),
-		xlogrus.WithFormatter(&logrus.JSONFormatter{TimestampFormat: time.RFC3339})))
+	logger.AddHook(xlogrus.NewRotationHook(rotation,
+		xlogrus.WithRotateLevel(level),
+		xlogrus.WithRotateFormatter(xlogrus.RFC3339JsonFormatter()),
+	))
 
 	_logger = logger
 	return nil

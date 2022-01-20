@@ -7,21 +7,22 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/database"
 )
 
-func QueryChats() []*model.Chat {
+func QueryChats() ([]*model.Chat, error) {
 	users := make([]*model.Chat, 0)
-	database.GormDB().Model(&model.Chat{}).Find(&users)
-	return users
+	rdb := database.GormDB().Model(&model.Chat{}).Find(&users)
+	if rdb.Error != nil {
+		return nil, rdb.Error
+	}
+	return users, nil
 }
 
-func CreateChat(chatID int64) xstatus.DbStatus {
+func CreateChat(chatID int64) (xstatus.DbStatus, error) {
 	chat := &model.Chat{ChatID: chatID}
 	rdb := database.GormDB().Model(&model.Chat{}).Create(chat)
-	sts, _ := xgorm.CreateErr(rdb)
-	return sts
+	return xgorm.CreateErr(rdb)
 }
 
-func DeleteChat(chatID int64) xstatus.DbStatus {
+func DeleteChat(chatID int64) (xstatus.DbStatus, error) {
 	rdb := database.GormDB().Model(&model.Chat{}).Where("chat_id = ?", chatID).Delete(&model.Chat{})
-	sts, _ := xgorm.DeleteErr(rdb)
-	return sts
+	return xgorm.DeleteErr(rdb)
 }

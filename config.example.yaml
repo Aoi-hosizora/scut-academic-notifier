@@ -23,5 +23,5 @@ redis:
   max-idletime: 300  # second
 
 task:
-  notifier-cron: 0 0/10 * * * *
+  notifier-cron: 0 0/20 * * * *
   notifier-time-range: 60 # day

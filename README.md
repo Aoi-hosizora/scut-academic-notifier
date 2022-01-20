@@ -1,23 +1,27 @@
 # scut-academic-notifier
 
 + A scut academic notifier telegram bot built by [tucnak/telebot.v2](https://github.com/tucnak/telebot/tree/v2).
-+ Send contents include SCUT Academic Notice (华工教务通知) and SE College Focus (软院公务通知).
-+ Related websites: [SCUT Office of Academic Affairs](http://jw.scut.edu.cn/zhinan/cms/index.do), [SCUT Software Engineering College Focus](http://www2.scut.edu.cn/sse/xyjd_17232/list.htm).
++ Notifier contents include:
+    + [华工教务处通知公告](http://jw.scut.edu.cn/zhinan/cms/index.do)
+    + [华工软院新闻资讯](http://www2.scut.edu.cn/sse/xyjd_17232/list.htm)
+    + [华工研究生院通知公告](http://www2.scut.edu.cn/graduate/14562/list.htm)
+    + [华工 GZIC 资讯中心](http://www2.scut.edu.cn/gzic/30279/list.htm)
 
-### Endpoints
+### Commands
 
 ```text
-*Commands*
-/start - show start message
-/help - show this help message
-/subscribe - subscribe this chat
-/unsubscribe - unsubscribe this chat
+*开始命令*
+/start - 显示开始信息
+/help - 显示帮助信息
 
-*Notifier*
-/send - send the current notices
+*通知器命令*
+/subscribe - 订阅通知器
+/unsubscribe - 取消订阅通知器
+/links - 获取通知来源链接
+/send - 获取最新通知列表
 ```
 
 ### References
 
 + [tucnak/telebot.v2](https://github.com/tucnak/telebot/tree/v2)
-+ [PuerkitoBio/goquery](https://github.com/PuerkitoBio/goquery)
++ [Aoi-hosizora/ahlib-web](https://github.com/Aoi-hosizora/ahlib-web)

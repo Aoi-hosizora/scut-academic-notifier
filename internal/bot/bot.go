@@ -79,5 +79,6 @@ func setupHandlers(bw *xtelebot.BotWrapper) {
 	// notifier
 	bw.HandleCommand("/subscribe", controller.SubscribeCtrl)
 	bw.HandleCommand("/unsubscribe", controller.UnsubscribeCtrl)
+	bw.HandleCommand("/links", controller.LinksCtrl)
 	bw.HandleCommand("/send", controller.SendCtrl)
 }

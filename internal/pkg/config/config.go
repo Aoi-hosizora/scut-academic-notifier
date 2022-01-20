@@ -1,12 +1,10 @@
 package config
 
 import (
-	"errors"
 	"github.com/Aoi-hosizora/ahlib-web/xvalidator"
 	"github.com/Aoi-hosizora/ahlib/xreflect"
 	"gopkg.in/yaml.v2"
 	"os"
-	"strings"
 )
 
 // _configs is the global config.Config.
@@ -88,17 +86,12 @@ func Load(path string) error {
 func validateConfig(cfg *Config) error {
 	val := xvalidator.NewCustomStructValidator()
 	val.SetValidatorTagName("validate")
+	val.SetMessageTagName("message")
 	xvalidator.UseTagAsFieldName(val.ValidateEngine(), "yaml")
-	ut, _ := xvalidator.ApplyTranslator(val.ValidateEngine(), xvalidator.EnLocaleTranslator(), xvalidator.EnTranslationRegisterFunc())
 	err := val.ValidateStruct(cfg)
-	if err == nil {
-		return nil
+	if err != nil {
+		ut, _ := xvalidator.ApplyTranslator(val.ValidateEngine(), xvalidator.EnLocaleTranslator(), xvalidator.EnTranslationRegisterFunc())
+		return xvalidator.FlattedMapToError(err.(*xvalidator.ValidateFieldsError).Translate(ut, false))
 	}
-
-	kv := err.(*xvalidator.ValidateFieldsError).Translate(ut, false)
-	msgs := make([]string, 0, len(kv))
-	for _, v := range kv {
-		msgs = append(msgs, v)
-	}
-	return errors.New(strings.Join(msgs, "; "))
+	return nil
 }

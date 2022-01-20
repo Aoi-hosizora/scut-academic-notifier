@@ -37,7 +37,7 @@ func (j *JobSet) foreachChats(chats []*model.Chat, fn func(chat *model.Chat)) {
 }
 
 func (j *JobSet) notifierJob() error {
-	chats := dao.QueryChats()
+	chats, _ := dao.QueryChats()
 	if len(chats) == 0 {
 		return nil
 	}
@@ -51,32 +51,32 @@ func (j *JobSet) notifierJob() error {
 	// foreach chat
 	j.foreachChats(chats, func(chat *model.Chat) {
 		// get old items and calc diff
-		oldItems, ok := dao.GetPostItems(chat.ChatID)
-		if !ok {
+		oldItems, err := dao.GetNoticeItems(chat.ChatID)
+		if err != nil {
 			return
 		}
 		logger.Logger().Infof("Get old items: #%d | %d", len(oldItems), chat.ChatID)
-		diff := model.ItemSliceDiff(newItems, oldItems)
+		diff := model.DiffNoticeItemSlice(newItems, oldItems)
 		logger.Logger().Infof("Get diff items: #%d | %d", len(diff), chat.ChatID)
 		if len(diff) == 0 {
 			return
 		}
 
 		// update old items
-		ok = dao.SetPostItems(chat.ChatID, newItems)
-		if !ok {
+		err = dao.SetNoticeItems(chat.ChatID, newItems)
+		if err != nil {
 			return
 		}
 		logger.Logger().Infof("Set new items: #%d | %d", len(newItems), chat.ChatID)
 
 		// render and send
-		render := service.RenderNoticeItems(diff, true)
-		if render == "" {
+		rendered := service.RenderNoticeItems(diff, true)
+		if rendered == "" {
 			return
 		}
 		dest, err := j.bw.Bot().ChatByID(xnumber.I64toa(chat.ChatID))
 		if err == nil {
-			j.bw.SendTo(dest, render, telebot.ModeMarkdown)
+			j.bw.SendTo(dest, rendered, telebot.ModeMarkdown)
 		}
 	})
 	return nil

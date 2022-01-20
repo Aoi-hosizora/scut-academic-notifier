@@ -15,8 +15,8 @@ const magicToken = "$$"
 func concatPattern(chatID, typ, title string) string {
 	typ = strings.ReplaceAll(typ, "-", magicToken)
 	title = strings.ReplaceAll(title, "-", magicToken)
-	return fmt.Sprintf("scut-item-%s-%s-%s", chatID, typ, title)
-	//                                    2  3  4
+	return fmt.Sprintf("scut-notice-%s-%s-%s", chatID, typ, title)
+	//                                      2  3  4
 }
 
 func parsePattern(key string) (chatID int64, typ, title string) {
@@ -27,26 +27,26 @@ func parsePattern(key string) (chatID int64, typ, title string) {
 	return
 }
 
-func GetPostItems(chatID int64) ([]*model.PostItem, bool) {
+func GetNoticeItems(chatID int64) ([]*model.NoticeItem, error) {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
 	keys, err := database.RedisClient().Keys(context.Background(), pattern).Result()
 	if err != nil {
-		return nil, false
+		return nil, err
 	}
 
-	items := make([]*model.PostItem, 0, len(keys))
+	items := make([]*model.NoticeItem, 0, len(keys))
 	for _, key := range keys {
 		_, typ, title := parsePattern(key)
-		items = append(items, &model.PostItem{Type: typ, Title: title})
+		items = append(items, &model.NoticeItem{Type: typ, Title: title})
 	}
-	return items, true
+	return items, nil
 }
 
-func SetPostItems(chatID int64, items []*model.PostItem) bool {
+func SetNoticeItems(chatID int64, items []*model.NoticeItem) error {
 	pattern := concatPattern(xnumber.I64toa(chatID), "*", "*")
 	_, err := xredis.DelAll(context.Background(), database.RedisClient(), pattern)
 	if err != nil {
-		return false
+		return err
 	}
 
 	kvs := make([]interface{}, 0, len(items)*2)
@@ -56,5 +56,5 @@ func SetPostItems(chatID int64, items []*model.PostItem) bool {
 		kvs = append(kvs, pattern, idStr)
 	}
 	err = database.RedisClient().MSet(context.Background(), kvs...).Err()
-	return err == nil
+	return err
 }
