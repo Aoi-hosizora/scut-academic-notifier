@@ -58,7 +58,7 @@ func UnsubscribeCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
 
 // LinksCtrl /links
 func LinksCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
-	flag := service.GetNoticeLinks()
+	flag := "*通知来源链接*\n" + service.GetNoticeLinks()
 	bw.ReplyTo(m, flag, telebot.ModeMarkdown)
 }
 

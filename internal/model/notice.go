@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Aoi-hosizora/ahlib/xslice"
+	"sort"
 )
 
 type NoticeItem struct {
@@ -22,4 +23,10 @@ func DiffNoticeItemSlice(s1 []*NoticeItem, s2 []*NoticeItem) []*NoticeItem {
 		p1, p2 := i.(*NoticeItem), j.(*NoticeItem)
 		return p1.Title == p2.Title && p1.Type == p2.Type
 	}).([]*NoticeItem)
+}
+
+func SortNoticeItemSlice(items []*NoticeItem) {
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Date > items[j].Date // reverse
+	})
 }

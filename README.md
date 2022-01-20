@@ -3,9 +3,9 @@
 + A scut academic notifier telegram bot built by [tucnak/telebot.v2](https://github.com/tucnak/telebot/tree/v2).
 + Notifier contents include:
     + [华工教务处通知公告](http://jw.scut.edu.cn/zhinan/cms/index.do)
-    + [华工软院新闻资讯](http://www2.scut.edu.cn/sse/xyjd_17232/list.htm)
-    + [华工研究生院通知公告](http://www2.scut.edu.cn/graduate/14562/list.htm)
-    + [华工 GZIC 资讯中心](http://www2.scut.edu.cn/gzic/30279/list.htm)
+    + [软件学院新闻资讯](http://www2.scut.edu.cn/sse/xyjd_17232/list.htm)
+    + [研究生院通知公告](http://www2.scut.edu.cn/graduate/14562/list.htm)
+    + [华工 GZIC 通知公告](http://www2.scut.edu.cn/gzic/30280/list.htm)
 
 ### Commands
 

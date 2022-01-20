@@ -9,10 +9,11 @@ import (
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/static"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
-func GetJwNotices() ([]*model.NoticeItem, error) {
+func getJwNotices() ([]*model.NoticeItem, error) {
 	bs, _, err := httpGet(static.JwNoticeApi)
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func GetJwNotices() ([]*model.NoticeItem, error) {
 	return result.Data.Data, nil
 }
 
-func GetSeNotices() ([]*model.NoticeItem, error) {
+func getSeNotices() ([]*model.NoticeItem, error) {
 	bs, _, err := httpGet(static.SeNoticeApi)
 	if err != nil {
 		return nil, err
@@ -40,29 +41,69 @@ func GetSeNotices() ([]*model.NoticeItem, error) {
 	return result.Data.Data, nil
 }
 
-func GetNoticeItems() ([]*model.NoticeItem, error) {
-	jwItems, err1 := GetJwNotices()
-	seItems, err2 := GetSeNotices()
+func getGrNotices() ([]*model.NoticeItem, error) {
+	bs, _, err := httpGet(static.GrNoticeApi)
+	if err != nil {
+		return nil, err
+	}
 
+	result := &model.NoticeItemResult{}
+	err = json.Unmarshal(bs, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Data, nil
+}
+
+func getGzicNotices() ([]*model.NoticeItem, error) {
+	bs, _, err := httpGet(static.GzicNoticeApi)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &model.NoticeItemResult{}
+	err = json.Unmarshal(bs, result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Data, nil
+}
+
+func GetNoticeItems() ([]*model.NoticeItem, error) {
+	functions := []func() ([]*model.NoticeItem, error){getJwNotices, getSeNotices, getGrNotices, getGzicNotices}
 	out := make([]*model.NoticeItem, 0)
-	for _, item := range jwItems {
-		if TimeInRange(item.Date, config.Configs().Task.NotifierTimeRange) {
-			out = append(out, item)
-		}
+	errs := make([]error, 0, len(functions))
+	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	for _, f := range functions {
+		f := f
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Printf("%p", f)
+			result, err := f()
+			log.Println(len(result))
+			mu.Lock()
+			defer mu.Unlock()
+
+			for _, item := range result {
+				if timeInRange(item.Date, config.Configs().Task.NotifierTimeRange) {
+					out = append(out, item)
+				}
+			}
+			errs = append(errs, err)
+		}()
 	}
-	for _, item := range seItems {
-		if TimeInRange(item.Date, config.Configs().Task.NotifierTimeRange) {
-			out = append(out, item)
-		}
-	}
+	wg.Wait()
 
 	if len(out) == 0 {
-		return nil, xerror.Combine(err1, err2)
+		return nil, xerror.Combine(errs...)
 	}
+	model.SortNoticeItemSlice(out)
 	return out, nil
 }
 
-func TimeInRange(ymd string, dayRange int32) bool {
+func timeInRange(ymd string, dayRange int32) bool {
 	give, err := time.ParseInLocation("2006-01-02", ymd, time.Local)
 	if err != nil {
 		log.Printf("Warning: failed to parse time `%s`: `%v`", ymd, err)
@@ -90,13 +131,13 @@ func RenderNoticeItems(items []*model.NoticeItem, fromTask bool) string {
 		sb.WriteString(fmt.Sprintf("%d. %s\n", idx+1, s))
 	}
 
-	footer := fmt.Sprintf("=====\n更多信息，请查阅 [华工教务处通知公告](%s)、[华工软院新闻资讯](%s)、[华工研究生院通知公告](%s)、[华工 GZIC 资讯中心](%s)。",
+	footer := fmt.Sprintf("=====\n更多信息，请查阅 [华工教务处通知公告](%s)、[软件学院新闻资讯](%s)、[研究生院通知公告](%s)、[华工 GZIC 通知公告](%s)。",
 		static.JwNoticeHomepage, static.SeNoticeHomepage, static.GrNoticeHomepage, static.GzicNoticeHomepage)
 	sb.WriteString(footer)
 	return sb.String()
 }
 
 func GetNoticeLinks() string {
-	return fmt.Sprintf("1. [华工教务处通知公告](%s)\n2. [华工软院新闻资讯](%s)\n3. [华工研究生院通知公告](%s)\n4. [华工 GZIC 资讯中心](%s)",
+	return fmt.Sprintf("1. [华工教务处通知公告](%s)\n2. [软件学院新闻资讯](%s)\n3. [研究生院通知公告](%s)\n4. [华工 GZIC 通知公告](%s)",
 		static.JwNoticeHomepage, static.SeNoticeHomepage, static.GrNoticeHomepage, static.GzicNoticeHomepage)
 }
