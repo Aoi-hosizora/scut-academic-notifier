@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// _logger is the global logrus.Logger.
 var _logger *logrus.Logger
 
 func Logger() *logrus.Logger {
@@ -26,12 +25,13 @@ func Setup() error {
 	logger.SetReportCaller(false)
 	logger.SetFormatter(xlogrus.NewSimpleFormatter(
 		xlogrus.WithTimestampFormat(time.RFC3339),
-		xlogrus.WithUseUTCTime(false),
+		xlogrus.WithTimeLocation(time.Local),
 	))
 
+	logName := config.Configs().Meta.LogName
 	rotation, err := xrotation.New(
-		xrotation.WithFilenamePattern(config.Configs().Meta.LogName+".%Y%m%d.log"),
-		xrotation.WithSymlinkFilename(config.Configs().Meta.LogName+"current.log"),
+		logName+".%Y%m%d.log",
+		xrotation.WithSymlinkFilename(logName+".current.log"),
 		xrotation.WithRotationTime(24*time.Hour),
 		xrotation.WithRotationMaxAge(15*24*time.Hour),
 		xrotation.WithClock(xtime.Local),
@@ -39,7 +39,8 @@ func Setup() error {
 	if err != nil {
 		return err
 	}
-	logger.AddHook(xlogrus.NewRotationHook(rotation,
+	logger.AddHook(xlogrus.NewRotationHook(
+		rotation,
 		xlogrus.WithRotateLevel(level),
 		xlogrus.WithRotateFormatter(xlogrus.RFC3339JsonFormatter()),
 	))

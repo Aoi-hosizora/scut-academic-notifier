@@ -6,15 +6,26 @@ import (
 	"github.com/Aoi-hosizora/ahlib/xerror"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/model"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/static"
 	"log"
 	"strings"
 	"sync"
 	"time"
 )
 
+const (
+	JwNoticeApi   = "http://api.common.aoihosizora.top/scut/notice/jw"
+	SeNoticeApi   = "http://api.common.aoihosizora.top/scut/notice/se"
+	GrNoticeApi   = "http://api.common.aoihosizora.top/scut/notice/gr"
+	GzicNoticeApi = "http://api.common.aoihosizora.top/scut/notice/gzic"
+
+	JwNoticeHomepage   = "http://jw.scut.edu.cn/zhinan/cms/index.do"
+	SeNoticeHomepage   = "http://www2.scut.edu.cn/sse/xyjd_17232/list.htm"
+	GrNoticeHomepage   = "http://www2.scut.edu.cn/graduate/14562/list.htm"
+	GzicNoticeHomepage = "http://www2.scut.edu.cn/gzic/30280/list.htm"
+)
+
 func getJwNotices() ([]*model.NoticeItem, error) {
-	bs, _, err := httpGet(static.JwNoticeApi)
+	bs, _, err := httpGet(JwNoticeApi)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +39,7 @@ func getJwNotices() ([]*model.NoticeItem, error) {
 }
 
 func getSeNotices() ([]*model.NoticeItem, error) {
-	bs, _, err := httpGet(static.SeNoticeApi)
+	bs, _, err := httpGet(SeNoticeApi)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +53,7 @@ func getSeNotices() ([]*model.NoticeItem, error) {
 }
 
 func getGrNotices() ([]*model.NoticeItem, error) {
-	bs, _, err := httpGet(static.GrNoticeApi)
+	bs, _, err := httpGet(GrNoticeApi)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +67,7 @@ func getGrNotices() ([]*model.NoticeItem, error) {
 }
 
 func getGzicNotices() ([]*model.NoticeItem, error) {
-	bs, _, err := httpGet(static.GzicNoticeApi)
+	bs, _, err := httpGet(GzicNoticeApi)
 	if err != nil {
 		return nil, err
 	}
@@ -80,18 +91,15 @@ func GetNoticeItems() ([]*model.NoticeItem, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("%p", f)
 			result, err := f()
-			log.Println(len(result))
 			mu.Lock()
 			defer mu.Unlock()
-
+			errs = append(errs, err)
 			for _, item := range result {
-				if timeInRange(item.Date, config.Configs().Task.NotifierTimeRange) {
+				if timeInRange(item.Date, config.Configs().Task.NotifierDayRange) {
 					out = append(out, item)
 				}
 			}
-			errs = append(errs, err)
 		}()
 	}
 	wg.Wait()
@@ -113,7 +121,7 @@ func timeInRange(ymd string, dayRange int32) bool {
 	return give.After(time.Now().Add(-du))
 }
 
-func RenderNoticeItems(items []*model.NoticeItem, fromTask bool) string {
+func FormatNoticeItems(items []*model.NoticeItem, fromTask bool) string {
 	if len(items) == 0 {
 		return ""
 	}
@@ -132,12 +140,12 @@ func RenderNoticeItems(items []*model.NoticeItem, fromTask bool) string {
 	}
 
 	footer := fmt.Sprintf("=====\n更多信息，请查阅 [华工教务处通知公告](%s)、[软件学院新闻资讯](%s)、[研究生院通知公告](%s)、[华工 GZIC 通知公告](%s)。",
-		static.JwNoticeHomepage, static.SeNoticeHomepage, static.GrNoticeHomepage, static.GzicNoticeHomepage)
+		JwNoticeHomepage, SeNoticeHomepage, GrNoticeHomepage, GzicNoticeHomepage)
 	sb.WriteString(footer)
 	return sb.String()
 }
 
 func GetNoticeLinks() string {
 	return fmt.Sprintf("1. [华工教务处通知公告](%s)\n2. [软件学院新闻资讯](%s)\n3. [研究生院通知公告](%s)\n4. [华工 GZIC 通知公告](%s)",
-		static.JwNoticeHomepage, static.SeNoticeHomepage, static.GrNoticeHomepage, static.GzicNoticeHomepage)
+		JwNoticeHomepage, SeNoticeHomepage, GrNoticeHomepage, GzicNoticeHomepage)
 }

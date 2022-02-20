@@ -8,11 +8,13 @@ require (
 	github.com/Aoi-hosizora/ahlib-db/xredis v0.0.0-00010101000000-000000000000
 	github.com/Aoi-hosizora/ahlib-more v0.0.0-00010101000000-000000000000
 	github.com/Aoi-hosizora/ahlib-web v0.0.0-00010101000000-000000000000
+	github.com/Aoi-hosizora/ahlib/xgeneric v0.0.0-00010101000000-000000000000
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/jinzhu/gorm v1.9.16
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.8.1
 	gopkg.in/tucnak/telebot.v2 v2.5.0
+	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v2 v2.3.0
 )
 
@@ -49,4 +51,5 @@ replace (
 	github.com/Aoi-hosizora/ahlib-db/xredis => ../ahlib-db/xredis
 	github.com/Aoi-hosizora/ahlib-more => ../ahlib-more
 	github.com/Aoi-hosizora/ahlib-web => ../ahlib-web
+	github.com/Aoi-hosizora/ahlib/xgeneric => ../ahlib/xgeneric
 )

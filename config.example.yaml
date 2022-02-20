@@ -1,8 +1,13 @@
 meta:
+  token: xxx
   run-mode: debug
   log-name: ./logs/console
-  token: xxx
-  poller-timeout: 600 # second
+  poller-timeout: 1800 # second
+
+task:
+  notifier-cron: 0 0 0/1 * * * # => 1 hour
+  notifier-time-noise: 1200 # => 20 minutes
+  notifier-day-range: 35 # day
 
 sqlite:
   database: database.db
@@ -21,7 +26,3 @@ redis:
   min-idles: 1
   max-lifetime: 3600 # second
   max-idletime: 300  # second
-
-task:
-  notifier-cron: 0 0/30 * * * *
-  notifier-time-range: 35 # day

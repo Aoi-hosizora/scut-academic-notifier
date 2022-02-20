@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -22,12 +22,12 @@ func httpGet(url string) ([]byte, *http.Response, error) {
 		return nil, nil, err
 	}
 	if resp.StatusCode != 200 {
-		return nil, nil, errors.New("service: get non-200 response")
+		return nil, nil, fmt.Errorf("service: get non-200 response when requesting `%s`", req.URL.String())
 	}
 
 	body := resp.Body
 	defer body.Close()
-	bs, err := ioutil.ReadAll(body)
+	bs, err := io.ReadAll(body)
 	if err != nil {
 		return nil, nil, err
 	}

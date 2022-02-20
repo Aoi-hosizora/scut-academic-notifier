@@ -1,14 +1,14 @@
 package model
 
 import (
-	"github.com/Aoi-hosizora/ahlib/xslice"
+	"github.com/Aoi-hosizora/ahlib/xgeneric/xslice"
 	"sort"
 )
 
 type NoticeItem struct {
-	Title string `json:"title"` // <- will be saved in redis
+	Title string `json:"title"` // <- will be saved to redis
 	Url   string `json:"url"`
-	Type  string `json:"type"` // <- will be saved in redis
+	Type  string `json:"type"` // <- will be saved to redis
 	Date  string `json:"date"`
 }
 
@@ -19,10 +19,9 @@ type NoticeItemResult struct {
 }
 
 func DiffNoticeItemSlice(s1 []*NoticeItem, s2 []*NoticeItem) []*NoticeItem {
-	return xslice.DiffWithG(s1, s2, func(i, j interface{}) bool {
-		p1, p2 := i.(*NoticeItem), j.(*NoticeItem)
-		return p1.Title == p2.Title && p1.Type == p2.Type
-	}).([]*NoticeItem)
+	return xslice.DiffWith(s1, s2, func(i, j *NoticeItem) bool {
+		return i.Title == j.Title && i.Type == j.Type
+	})
 }
 
 func SortNoticeItemSlice(items []*NoticeItem) {

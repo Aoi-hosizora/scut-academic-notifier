@@ -8,12 +8,12 @@ import (
 )
 
 func QueryChats() ([]*model.Chat, error) {
-	users := make([]*model.Chat, 0)
-	rdb := database.GormDB().Model(&model.Chat{}).Find(&users)
+	chats := make([]*model.Chat, 0)
+	rdb := database.GormDB().Model(&model.Chat{}).Find(&chats)
 	if rdb.Error != nil {
 		return nil, rdb.Error
 	}
-	return users, nil
+	return chats, nil
 }
 
 func CreateChat(chatID int64) (xstatus.DbStatus, error) {

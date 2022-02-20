@@ -7,7 +7,6 @@ import (
 	"os"
 )
 
-// _configs is the global config.Config.
 var _configs *Config
 
 func Configs() *Config {
@@ -22,16 +21,17 @@ type Config struct {
 }
 
 type MetaConfig struct {
+	Token   string `yaml:"token"    validate:"required"`
 	RunMode string `yaml:"run-mode" default:"debug"`
 	LogName string `yaml:"log-name" default:"./logs/console"`
 
-	Token         string `yaml:"token"          validate:"required"`
-	PollerTimeout uint64 `yaml:"poller-timeout" validate:"required"`
+	PollerTimeout uint64 `yaml:"poller-timeout" default:"5" validate:"gt=0"`
 }
 
 type TaskConfig struct {
 	NotifierCron      string `yaml:"notifier-cron"       validate:"required"`
-	NotifierTimeRange int32  `yaml:"notifier-time-range" validate:"required"`
+	NotifierTimeNoise int32  `yaml:"notifier-time-noise" validate:"required,gte=600"`
+	NotifierDayRange  int32  `yaml:"notifier-day-range" validate:"required,gt=0"`
 }
 
 type SQLiteConfig struct {
@@ -84,14 +84,13 @@ func Load(path string) error {
 }
 
 func validateConfig(cfg *Config) error {
-	val := xvalidator.NewCustomStructValidator()
-	val.SetValidatorTagName("validate")
+	val := xvalidator.NewMessagedValidator()
+	val.SetValidateTagName("validate")
 	val.SetMessageTagName("message")
-	xvalidator.UseTagAsFieldName(val.ValidateEngine(), "yaml")
-	err := val.ValidateStruct(cfg)
-	if err != nil {
-		ut, _ := xvalidator.ApplyTranslator(val.ValidateEngine(), xvalidator.EnLocaleTranslator(), xvalidator.EnTranslationRegisterFunc())
-		return xvalidator.FlattedMapToError(err.(*xvalidator.ValidateFieldsError).Translate(ut, false))
+	val.UseTagAsFieldName("yaml", "json")
+	if err := val.ValidateStruct(cfg); err != nil {
+		ut, _ := xvalidator.ApplyEnglishTranslator(val.ValidateEngine())
+		return xvalidator.MapToError(err.(*xvalidator.MultiFieldsError).Translate(ut, false))
 	}
 	return nil
 }

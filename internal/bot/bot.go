@@ -1,17 +1,16 @@
 package bot
 
 import (
-	"fmt"
 	"github.com/Aoi-hosizora/ahlib-web/xgin"
 	"github.com/Aoi-hosizora/ahlib-web/xtelebot"
-	"github.com/Aoi-hosizora/ahlib/xcolor"
 	"github.com/Aoi-hosizora/ahlib/xruntime"
-	"github.com/Aoi-hosizora/scut-academic-notifier/internal/bot/controller"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/config"
 	"github.com/Aoi-hosizora/scut-academic-notifier/internal/pkg/logger"
 	"gopkg.in/tucnak/telebot.v2"
 	"log"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type Consumer struct {
@@ -24,10 +23,12 @@ func (s *Consumer) BotWrapper() *xtelebot.BotWrapper {
 
 func NewConsumer() (*Consumer, error) {
 	// telebot
+	cfg := config.Configs().Meta
 	bot, err := telebot.NewBot(telebot.Settings{
-		Token:   config.Configs().Meta.Token,
-		Verbose: false,
-		Poller:  &telebot.LongPoller{Timeout: time.Second * time.Duration(config.Configs().Meta.PollerTimeout)},
+		Token:    cfg.Token,
+		Reporter: func(err error) {}, // ignore
+		Verbose:  false,
+		Poller:   xtelebot.LongPoller(int(cfg.PollerTimeout)),
 	})
 	if err != nil {
 		return nil, err
@@ -35,15 +36,12 @@ func NewConsumer() (*Consumer, error) {
 
 	// wrapper
 	bw := xtelebot.NewBotWrapper(bot)
-	bw.SetEndpointHandledCallback(func(endpoint string, handlerName string) {
-		if config.IsDebugMode() {
-			fmt.Printf("[Bot-debug] %-46s --> %s\n", xcolor.Blue.Sprint(endpoint), handlerName)
-		}
-	})
 	setupLoggers(bw)
 
 	// handlers
+	bw.SetHandledCallback(xtelebot.DefaultColorizedHandledCallback)
 	setupHandlers(bw)
+	bw.SetHandledCallback(nil)
 
 	s := &Consumer{bw: bw}
 	return s, nil
@@ -54,31 +52,35 @@ func setupLoggers(bw *xtelebot.BotWrapper) {
 	bw.SetReceivedCallback(func(endpoint interface{}, received *telebot.Message) {
 		xtelebot.LogReceiveToLogrus(l, endpoint, received)
 	})
-	bw.SetRepliedCallback(func(received *telebot.Message, replied *telebot.Message, err error) {
-		xtelebot.LogReplyToLogrus(l, received, replied, err)
+	bw.SetRespondedCallback(func(typ xtelebot.RespondEventType, event *xtelebot.RespondEvent) {
+		xtelebot.LogRespondToLogrus(l, typ, event)
 	})
-	bw.SetSentCallback(func(chat *telebot.Chat, sent *telebot.Message, err error) {
-		xtelebot.LogSendToLogrus(l, chat, sent, err)
-	})
-	bw.SetPanicHandler(func(endpoint interface{}, v interface{}) {
-		xgin.LogRecoveryToLogrus(l, v, xruntime.RuntimeTraceStack(4))
+	bw.SetPanicHandler(func(_, _, v interface{}) {
+		xgin.LogRecoveryToLogrus(l, v, xruntime.RuntimeTraceStack(3))
 	})
 }
 
 func (s *Consumer) Start() {
+	terminated := make(chan interface{})
+	go func() {
+		defer close(terminated)
+		ch := make(chan os.Signal)
+		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-ch
+		signal.Stop(ch)
+		log.Printf("[Bot] Stopping due to %s received...", xruntime.SignalName(sig.(syscall.Signal)))
+		s.bw.Bot().Stop()
+	}()
+
+	hp, hsp, _ := xruntime.GetProxyEnv()
+	if hp != "" {
+		log.Printf("[Bot] Using http proxy: %s", hp)
+	}
+	if hsp != "" {
+		log.Printf("[Bot] Using https proxy: %s", hsp)
+	}
 	log.Printf("[Bot] Starting consuming incoming update on bot %s", s.bw.Bot().Me.Username)
-	s.bw.Bot().Start() // block to poll and consume
-}
-
-func setupHandlers(bw *xtelebot.BotWrapper) {
-	// start
-	bw.HandleCommand("/start", controller.StartCtrl)
-	bw.HandleCommand("/help", controller.HelpCtrl)
-	bw.HandleCommand(telebot.OnText, controller.OnTextCtrl)
-
-	// notifier
-	bw.HandleCommand("/subscribe", controller.SubscribeCtrl)
-	bw.HandleCommand("/unsubscribe", controller.UnsubscribeCtrl)
-	bw.HandleCommand("/links", controller.LinksCtrl)
-	bw.HandleCommand("/send", controller.SendCtrl)
+	s.bw.Bot().Start()
+	<-terminated
+	log.Println("[Bot] Bot consumer is stopped successfully")
 }

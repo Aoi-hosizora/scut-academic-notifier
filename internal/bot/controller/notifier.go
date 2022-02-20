@@ -22,62 +22,59 @@ const (
 	_NO_NOTICES_CURRENTLY = "当前没有通知内容。"
 )
 
-// SubscribeCtrl /subscribe
-func SubscribeCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+// Subscribe /subscribe
+func Subscribe(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	s := ""
 	sts, err := dao.CreateChat(m.Chat.ID)
-	flag := ""
 	if sts == xstatus.DbExisted {
-		flag = _SUBSCRIBE_ALREADY
+		s = _SUBSCRIBE_ALREADY
 	} else if sts == xstatus.DbFailed {
-		flag = _SUBSCRIBE_FAILED
+		s = _SUBSCRIBE_FAILED
 		if config.IsDebugMode() {
-			flag += "\n错误：" + err.Error()
+			s += "\n错误：" + err.Error()
 		}
 	} else {
-		flag = _SUBSCRIBE_SUCCESS
+		s = _SUBSCRIBE_SUCCESS
 	}
-	bw.ReplyTo(m, flag)
+	bw.RespondReply(m, false, s)
 }
 
-// UnsubscribeCtrl /unsubscribe
-func UnsubscribeCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+// Unsubscribe /unsubscribe
+func Unsubscribe(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	s := ""
 	sts, err := dao.DeleteChat(m.Chat.ID)
-	flag := ""
 	if sts == xstatus.DbNotFound {
-		flag = _SUBSCRIBE_NOT_YET
+		s = _SUBSCRIBE_NOT_YET
 	} else if sts == xstatus.DbFailed {
-		flag = _UNSUBSCRIBE_FAILED
+		s = _UNSUBSCRIBE_FAILED
 		if config.IsDebugMode() {
-			flag += "\n错误：" + err.Error()
+			s += "\n错误：" + err.Error()
 		}
 	} else {
-		flag = _UNSUBSCRIBE_SUCCESS
+		s = _UNSUBSCRIBE_SUCCESS
 	}
-	bw.ReplyTo(m, flag)
+	bw.RespondReply(m, false, s)
 }
 
-// LinksCtrl /links
-func LinksCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
-	flag := "*通知来源链接*\n" + service.GetNoticeLinks()
-	bw.ReplyTo(m, flag, telebot.ModeMarkdown)
+// Links /links
+func Links(bw *xtelebot.BotWrapper, m *telebot.Message) {
+	s := "*通知来源链接*\n" + service.GetNoticeLinks()
+	bw.RespondReply(m, false, s, telebot.ModeMarkdown)
 }
 
-// SendCtrl /send
-func SendCtrl(bw *xtelebot.BotWrapper, m *telebot.Message) {
+// Send /send
+func Send(bw *xtelebot.BotWrapper, m *telebot.Message) {
 	items, err := service.GetNoticeItems()
 	if err != nil {
 		if config.IsDebugMode() {
-			bw.ReplyTo(m, _GET_NOTICES_FAILED+"\n错误："+err.Error())
+			bw.RespondReply(m, false, _GET_NOTICES_FAILED+"\n错误："+err.Error())
 		} else {
-			bw.ReplyTo(m, _GET_NOTICES_FAILED)
+			bw.RespondReply(m, false, _GET_NOTICES_FAILED)
 		}
-		return
+	} else if len(items) == 0 {
+		bw.RespondReply(m, false, _NO_NOTICES_CURRENTLY)
+	} else {
+		formatted := service.FormatNoticeItems(items, false)
+		bw.RespondReply(m, false, formatted, telebot.ModeMarkdown)
 	}
-	if len(items) == 0 {
-		bw.ReplyTo(m, _NO_NOTICES_CURRENTLY)
-		return
-	}
-
-	rendered := service.RenderNoticeItems(items, false)
-	bw.ReplyTo(m, rendered, telebot.ModeMarkdown)
 }
