@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/Aoi-hosizora/ahlib/xgeneric/xslice"
+	"github.com/Aoi-hosizora/ahlib/xgeneric/xgslice"
 	"sort"
 )
 
@@ -19,7 +19,7 @@ type NoticeItemResult struct {
 }
 
 func DiffNoticeItemSlice(s1 []*NoticeItem, s2 []*NoticeItem) []*NoticeItem {
-	return xslice.DiffWith(s1, s2, func(i, j *NoticeItem) bool {
+	return xgslice.DiffWith(s1, s2, func(i, j *NoticeItem) bool {
 		return i.Title == j.Title && i.Type == j.Type
 	})
 }
